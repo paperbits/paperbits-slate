@@ -1,15 +1,7 @@
-import { Editor, Mark, Raw, Data } from 'slate'
-
-// import { Editor } from '../../lib/components/editor'
-// import { Mark} from  '../../lib/models/mark'
-// import { Raw } from '../../lib/serializers/raw'
-// import { Data } from '../../lib/models/data'
-
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-
+import { Editor, Mark, Raw, Data } from 'slate'
 import { Set, Seq, Collection, List, Map } from 'immutable'
-
 import { initialState } from './state'
 import * as injector from 'react-frame-aware-selection-plugin'
 
@@ -384,7 +376,7 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public toggleH4 = () => {
+    public toggleH4() {
         this.onClickBlock('heading-four');
         this.getMyself().forceUpdate();
     }
@@ -532,7 +524,7 @@ export class PaperSlate extends React.Component<any, any> {
         return state;
     };
 
-    public changeIntentionForInline = (state, node, intentionFn, type, operation, category) => {
+    public changeIntentionForInline(state, node, intentionFn, type, operation, category) {
         let data;
         let mark = state.marks.find(m => m.type == 'custom');
         if (mark) {
@@ -893,7 +885,7 @@ export class PaperSlate extends React.Component<any, any> {
      *
      * @param {State} state
      */
-    onChange = (state) => {
+    public onChange(state) {
         this.setState({ state });
     };
 
@@ -1338,7 +1330,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @return {Element}
      */
 
-    public renderEditor = () => {
+    public renderEditor(): JSX.Element {
         let editor = <Editor
             placeholder={'Enter some rich text...'}
             state={this.state.state}
