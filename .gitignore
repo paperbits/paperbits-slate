@@ -1,0 +1,10 @@
+node_modules/
+bower_components/
+engagement/
+dist/
+src/app/**/*.js
+src/app.ko/**/*.js
+.idea/
+.vscode/
+/debug.log
+tmp/
