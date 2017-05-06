@@ -107,10 +107,11 @@ export class PaperSlate extends React.Component<any, any> {
         disabledListeners: [],
         enabledListeners: []
     };
-    getMyself = () => this.me;
 
     constructor() {
         super();
+
+        this.onSelectionChange = this.onSelectionChange.bind(this);
 
         if (PaperSlate.dirtyHack) {
             let getMyself = PaperSlate.dirtyHack;
@@ -119,32 +120,37 @@ export class PaperSlate extends React.Component<any, any> {
         }
     }
 
-    //public methods
-    renderToContainer = (parentElement) => {
+    public getMyself() {
+        return this.me;
+    }
 
+    public renderToContainer(parentElement) {
         let self = this;
+
         PaperSlate.dirtyHack = () => self.me;
+
         this.reactElement = React.createElement(PaperSlate);
         this.parentElement = parentElement;
+
         this.me = ReactDOM.render(this.reactElement, parentElement, () => { });
+
         return this.me;
     };
 
-    setInitialState = (initialState) => {
+    public setInitialState(initialState) {
         this.state.state = Raw.deserialize(initialState, { terse: true });
     };
 
-    updateState = (newState) => {
+    public updateState(newState) {
         let state = Raw.deserialize(newState, { terse: true });
         this.getMyself().setState({ state })
     };
 
-    getState = () => {
+    public getState() {
         return Raw.serialize(this.getMyself().state.state, { terse: true });
     };
 
-
-    getSelectionPosition = () => {
+    public getSelectionPosition() {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         return {
             "anchorKey": state.selection.anchorKey,
@@ -154,7 +160,7 @@ export class PaperSlate extends React.Component<any, any> {
         };
     };
 
-    setSelectionPosition = (selectionPosition, focus) => {
+    public setSelectionPosition(selectionPosition, focus) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
         if (focus) {
@@ -169,17 +175,18 @@ export class PaperSlate extends React.Component<any, any> {
         else {
             this.setState({ state })
         }
+
         this.getMyself().forceUpdate();
     };
 
-    addSelectionChangeListener = (callback) => {
+    public addSelectionChangeListener(callback) {
         let { selectionChangeListeners } = this.state;
         selectionChangeListeners.push(callback);
         this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
     };
 
-    removeSelectionChangeListener = (callback) => {
+    public removeSelectionChangeListener(callback) {
         let { selectionChangeListeners } = this.state;
         for (let i = 0; i < selectionChangeListeners.length; i++) {
             if (selectionChangeListeners[i] === callback) {
@@ -191,14 +198,14 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     };
 
-    addDisabledListener = (callback) => {
+    public addDisabledListener(callback) {
         let { disabledListeners } = this.state;
         disabledListeners.push(callback);
         this.getMyself().setState({ disabledListeners: disabledListeners });
         this.getMyself().forceUpdate();
     };
 
-    removeDisabledListener = (callback) => {
+    public removeDisabledListener(callback) {
         let { disabledListeners } = this.state;
         for (let i = 0; i < disabledListeners.length; i++) {
             if (disabledListeners[i] === callback) {
@@ -210,14 +217,14 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     };
 
-    addEnabledListener = (callback) => {
+    public addEnabledListener(callback) {
         let { enabledListeners } = this.state;
         enabledListeners.push(callback);
         this.getMyself().setState({ enabledListeners: enabledListeners });
         this.getMyself().forceUpdate();
     };
 
-    removeEnabledListener = (callback) => {
+    public removeEnabledListener(callback) {
         let { enabledListeners } = this.state;
         for (let i = 0; i < enabledListeners.length; i++) {
             if (enabledListeners[i] === callback) {
@@ -229,18 +236,18 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     };
 
-    notifyListeners = (listeners) => {
+    public notifyListeners(listeners) {
         for (let i = 0; i < listeners.length; i++) {
             listeners[i]();
         }
     }
 
-    addOpenLinkEditorListener = (callback) => {
+    public addOpenLinkEditorListener(callback) {
         this.getMyself().setState({ getHrefData: callback });
         this.getMyself().forceUpdate();
     };
 
-    getSelectionState = function () {
+    public getSelectionState() {
         const state = {
             bold: this.hasMark('bold'),
             italic: this.hasMark('italic'),
@@ -263,7 +270,7 @@ export class PaperSlate extends React.Component<any, any> {
         return state;
     };
 
-    getIntentions = function () {
+    public getIntentions() {
         var result = {
             block: [],
             inline: []
@@ -337,66 +344,78 @@ export class PaperSlate extends React.Component<any, any> {
         return result;
     }
 
-    toggleBold = () => {
+    public toggleBold() {
         this.onClickMark('bold');
         this.getMyself().forceUpdate();
-    };
-    toggleItalic = () => {
+    }
+
+    public toggleItalic() {
         this.onClickMark('italic');
         this.getMyself().forceUpdate();
-    };
-    toggleUnderlined = () => {
+    }
+
+    public toggleUnderlined() {
         this.onClickMark('underlined');
         this.getMyself().forceUpdate();
-    };
-    toggleUl = () => {
+    }
+
+    public toggleUl() {
         this.onClickBlock('bulleted-list');
         this.getMyself().forceUpdate();
-    };
-    toggleOl = () => {
+    }
+
+    public toggleOl() {
         this.onClickBlock('numbered-list');
         this.getMyself().forceUpdate();
-    };
-    toggleH1 = () => {
+    }
+
+    public toggleH1() {
         this.onClickBlock('heading-one');
         this.getMyself().forceUpdate();
-    };
-    toggleH2 = () => {
+    }
+
+    public toggleH2() {
         this.onClickBlock('heading-two');
         this.getMyself().forceUpdate();
-    };
-    toggleH3 = () => {
+    }
+
+    public toggleH3() {
         this.onClickBlock('heading-three');
         this.getMyself().forceUpdate();
-    };
-    toggleH4 = () => {
+    }
+
+    public toggleH4 = () => {
         this.onClickBlock('heading-four');
         this.getMyself().forceUpdate();
-    };
-    toggleH5 = () => {
+    }
+
+    public toggleH5() {
         this.onClickBlock('heading-five');
         this.getMyself().forceUpdate();
-    };
-    toggleH6 = () => {
+    }
+
+    public toggleH6() {
         this.onClickBlock('heading-six');
         this.getMyself().forceUpdate();
-    };
-    toggleQuote = () => {
+    }
+
+    public toggleQuote() {
         this.onClickBlock('block-quote');
         this.getMyself().forceUpdate();
-    };
-    toggleCode = () => {
+    }
+
+    public toggleCode() {
         this.onClickBlock('code');
         this.getMyself().forceUpdate();
-    };
+    }
 
-    setIntention = (intentionFn, type) => {
+    public setIntention(intentionFn, type) {
         this.changeIntention(intentionFn, type, 'set');
-    };
+    }
 
-    resetIntention = (intentionFn, type) => {
+    public resetIntention(intentionFn, type) {
         this.changeIntention(intentionFn, type, 'reset');
-    };
+    }
 
     public changeIntention(intentionFn, type, operation) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
@@ -435,7 +454,7 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     };
 
-    toggleCategory = (category, intentionFn, type) => {
+    public toggleCategory(category, intentionFn, type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         let isExpanded = state.isExpanded
         let selection = state.selection
@@ -492,7 +511,7 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     };
 
-    toggleInlineCategory = (state, node, category, intentionFn, type) => {
+    public toggleInlineCategory(state, node, category, intentionFn, type) {
         let data;
         if (state.marks.some(m => m.type == "custom")) {
             state.marks.forEach(mark => {
@@ -513,7 +532,7 @@ export class PaperSlate extends React.Component<any, any> {
         return state;
     };
 
-    changeIntentionForInline = (state, node, intentionFn, type, operation, category) => {
+    public changeIntentionForInline = (state, node, intentionFn, type, operation, category) => {
         let data;
         let mark = state.marks.find(m => m.type == 'custom');
         if (mark) {
@@ -524,21 +543,21 @@ export class PaperSlate extends React.Component<any, any> {
         return this.updateCustomMark(state, data, newData, category, intentionFn);
     };
 
-    toggleBlockCategory = (state, node, category, intentionFn, type) => {
+    public toggleBlockCategory(state, node, category, intentionFn, type) {
         let { data } = node;
         let newData = this.createOrUpdateCategory(data, category, intentionFn);
 
         return this.updateCustomBlock(state, data, newData);
     };
 
-    changeIntentionForBlock = (state, node, intentionFn, type, operation) => {
+    public changeIntentionForBlock(state, node, intentionFn, type, operation) {
         let { data } = node;
         let newData = this.createOrUpdateIntention(data, intentionFn, operation);
 
         return this.updateCustomBlock(state, data, newData);
     };
 
-    createOrUpdateCategory = (data, category, intentionFn) => {
+    public createOrUpdateCategory(data, category, intentionFn) {
         if (!data) {
 
             if (!intentionFn) {
@@ -591,7 +610,7 @@ export class PaperSlate extends React.Component<any, any> {
         return data.set("categories", categories)
     }
 
-    createOrUpdateIntention = (data, intentionFn, operation) => {
+    public createOrUpdateIntention(data, intentionFn, operation) {
         let subj = [intentionFn]
         if (!data) {
             if (operation == 'reset') {
@@ -618,10 +637,8 @@ export class PaperSlate extends React.Component<any, any> {
         return data;
     }
 
-    updateCustomMark = (state, data, newData, category, intentionFn, mark?) => {
-
+    public updateCustomMark(state, data, newData, category, intentionFn, mark?) {
         if (mark) {
-
             // if (!intentionFn &&
             //     (mark.type == "custom" &&
             //         mark.data &&
@@ -644,7 +661,7 @@ export class PaperSlate extends React.Component<any, any> {
         return state;
     }
 
-    updateCustomBlock = (state, data, newData) => {
+    public updateCustomBlock(state, data, newData) {
         let block = state.blocks.find(_ => true);
 
         state = state.transform()
@@ -660,15 +677,15 @@ export class PaperSlate extends React.Component<any, any> {
         return state;
     }
 
-    toggleAlignment = (intentionFn) => {
+    public toggleAlignment(intentionFn) {
         this.toggleCategory('alignment', intentionFn, 'block')
     };
 
-    toggleColor = (intentionFn) => {
+    public toggleColor(intentionFn) {
         this.toggleCategory('color', intentionFn, 'inline')
     };
 
-    resetToNormal = () => {
+    public resetToNormal() {
         this.hasBlock("heading-one") && this.toggleH1(),
             this.hasBlock("heading-two") && this.toggleH2(),
             this.hasBlock("heading-three") && this.toggleH3(),
@@ -680,7 +697,7 @@ export class PaperSlate extends React.Component<any, any> {
         this.resetAllIntentions();
     }
 
-    resetAllIntentions = () => {
+    public resetAllIntentions() {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
         state.blocks.forEach(block => {
@@ -705,18 +722,19 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    enable = () => {
+    public enable(): void {
         this.getMyself().setState({ readOnly: false });
         this.getMyself().forceUpdate();
         this.notifyListeners(this.getMyself().state.enabledListeners);
-    };
-    disable = () => {
+    }
+
+    public disable(): void {
         this.getMyself().setState({ readOnly: true });
         this.getMyself().forceUpdate();
         this.notifyListeners(this.getMyself().state.disabledListeners);
-    };
+    }
 
-    setHyperlink = (hyperlinkData, selectionPosition) => {
+    public setHyperlink(hyperlinkData, selectionPosition) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
         if (selectionPosition) {
@@ -758,7 +776,7 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     };
 
-    getHyperlink = () => {
+    public getHyperlink() {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         const hasInline = this.hasInline('link');
 
@@ -774,7 +792,7 @@ export class PaperSlate extends React.Component<any, any> {
         return data;
     };
 
-    removeHyperlink = () => {
+    public removeHyperlink() {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         const hasInline = this.hasInline('link');
 
@@ -793,6 +811,7 @@ export class PaperSlate extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     };
 
+
     // private
 
     /**
@@ -801,12 +820,12 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    hasMark = (type) => {
+    public hasMark(type): boolean {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.marks.some(mark => mark.type == type)
     };
 
-    getMarkData = function (type) {
+    public getMarkData(type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         let mark = state.marks.first(function (e) {
             return e.type == type
@@ -824,7 +843,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    hasBlock = (type) => {
+    public hasBlock(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.type == type)
     };
@@ -835,7 +854,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    has = (type) => {
+    public has(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.type == type)
     };
@@ -846,11 +865,10 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    isAligned = (type) => {
+    public isAligned(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.data.get("alignment") == type)
     };
-
 
     /**
      * Check if the any of the currently selected inlines are of `type`.
@@ -858,13 +876,12 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-
-    hasInline = (type) => {
+    public hasInline(type): boolean {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.inlines.some(node => node.type == type)
     };
 
-    onSelectionChange = (selection, state) => {
+    public onSelectionChange(selection, state) {
         this.getMyself().setState({ state });
         this.getMyself().state.state = state;
         this.getMyself().forceUpdate();
@@ -888,8 +905,10 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {State} state
      * @return {State}
      */
-    onKeyDown = (e, data, state) => {
-        if (!data.isMod) return;
+    public onKeyDown(e, data, state) {
+        if (!data.isMod)
+            return;
+
         let mark;
 
         switch (data.key) {
@@ -915,10 +934,11 @@ export class PaperSlate extends React.Component<any, any> {
             .apply();
 
         e.preventDefault();
-        return state
+
+        return state;
     };
 
-    onClickStyled = function (style) {
+    public onClickStyled(style) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state
         let isExpanded = state.isExpanded
         let selection = state.selection
@@ -956,7 +976,7 @@ export class PaperSlate extends React.Component<any, any> {
      *
      * @param {String} type
      */
-    onClickMark = (type) => {
+    public onClickMark(type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
         let expand = state.isExpanded;
@@ -982,16 +1002,19 @@ export class PaperSlate extends React.Component<any, any> {
         }
     };
 
-    onClickRemoveMark = function (type) {
+    public onClickRemoveMark(type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state
         let isExpanded = state.isExpanded;
         let selection = state.selection;
         let mark = state.marks.find(function (e) { return e.type == type })
+
         for (; mark;) {
             state = state.transform().removeMark(mark).apply();
+
             if (isExpanded) {
                 state = state.transform().select(selection).apply()
             }
+
             this.getMyself() ?
                 this.getMyself().setState({
                     state: state
@@ -999,6 +1022,7 @@ export class PaperSlate extends React.Component<any, any> {
                 this.setState({
                     state: state
                 });
+
             mark = state.marks.find(function (m) {
                 return m.type == type
             })
@@ -1010,7 +1034,7 @@ export class PaperSlate extends React.Component<any, any> {
      *
      * @param {String} type
      */
-    onClickInline = (type) => {
+    public onClickInline(type) {
         switch (type) {
             case 'link':
                 this.onClickLink();
@@ -1025,11 +1049,9 @@ export class PaperSlate extends React.Component<any, any> {
      *
      * @param {String} type
      */
-    onClickAlign = (alignment) => {
-
+    public onClickAlign(alignment) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         let transform = state.transform();
-
         let newData = Data.create({ alignment: alignment });
 
         state = transform.setBlock({
@@ -1049,8 +1071,7 @@ export class PaperSlate extends React.Component<any, any> {
      *
      * @param {String} type
      */
-    onClickBlock = (type) => {
-
+    public onClickBlock(type: string) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         let transform = state.transform();
         const { document } = state;
@@ -1120,17 +1141,17 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {State} state
      */
 
-    onPaste = (e, data, state) => {
-        if (state.isCollapsed) return;
-        if (data.type != 'text' && data.type != 'html') return;
-        //if (!isUrl(data.text)) return;
+    public onPaste(e, data, state) {
+        if (state.isCollapsed) {
+            return;
+        }
+
+        if (data.type != 'text' && data.type != 'html') {
+            return;
+        }
 
         let transform = state.transform();
         let { anchorOffset } = state.selection;
-
-        // if (this.hasLinks()) {
-        //     transform = transform.unwrapInline('link')
-        // }
 
         return transform
             .wrapInline({
@@ -1143,7 +1164,7 @@ export class PaperSlate extends React.Component<any, any> {
             .apply()
     };
 
-    onClickLink = () => {
+    public onClickLink(): void {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
         if (!state.isExpanded) {
@@ -1204,30 +1225,29 @@ export class PaperSlate extends React.Component<any, any> {
      * @return {Element}
      */
 
-    renderToolbar = () => {
-        return (
-            <div className="menu toolbar-menu">
-                {this.renderMarkButton('bold', 'format_bold')}
-                {this.renderMarkButton('italic', 'format_italic')}
-                {this.renderMarkButton('underlined', 'format_underlined')}
-                {this.renderInlineButton('link', 'link')}
-                {this.renderBlockButton('code', 'code')}
-                {this.renderBlockButton('heading-one', 'looks_one')}
-                {this.renderBlockButton('heading-two', 'looks_two')}
-                {this.renderBlockButton('heading-three', 'looks_3')}
-                {this.renderBlockButton('heading-four', 'looks_4')}
-                {this.renderBlockButton('heading-five', 'looks_5')}
-                {this.renderBlockButton('heading-six', 'looks_6')}
-                {this.renderBlockButton('block-quote', 'format_quote')}
-                {this.renderBlockButton('numbered-list', 'format_list_numbered')}
-                {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
-                {this.renderAlignButton('align-left', 'format_align_left')}
-                {this.renderAlignButton('align-center', 'format_align_center')}
-                {this.renderAlignButton('align-right', 'format_align_right')}
-                {this.renderAlignButton('align-justify', 'format_align_justify')}
-            </div>
-        )
-    };
+    public renderToolbar() {
+        return
+        <div className="menu toolbar-menu">
+            {this.renderMarkButton('bold', 'format_bold')}
+            {this.renderMarkButton('italic', 'format_italic')}
+            {this.renderMarkButton('underlined', 'format_underlined')}
+            {this.renderInlineButton('link', 'link')}
+            {this.renderBlockButton('code', 'code')}
+            {this.renderBlockButton('heading-one', 'looks_one')}
+            {this.renderBlockButton('heading-two', 'looks_two')}
+            {this.renderBlockButton('heading-three', 'looks_3')}
+            {this.renderBlockButton('heading-four', 'looks_4')}
+            {this.renderBlockButton('heading-five', 'looks_5')}
+            {this.renderBlockButton('heading-six', 'looks_6')}
+            {this.renderBlockButton('block-quote', 'format_quote')}
+            {this.renderBlockButton('numbered-list', 'format_list_numbered')}
+            {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
+            {this.renderAlignButton('align-left', 'format_align_left')}
+            {this.renderAlignButton('align-center', 'format_align_center')}
+            {this.renderAlignButton('align-right', 'format_align_right')}
+            {this.renderAlignButton('align-justify', 'format_align_justify')}
+        </div>
+    }
 
     /**
      * Render a mark-toggling toolbar button.
@@ -1236,7 +1256,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} icon
      * @return {Element}
      */
-    renderMarkButton = (type, icon) => {
+    public renderMarkButton(type, icon) {
         const isActive = this.hasMark(type);
         const onMouseDown = e => {
             e.preventDefault();
@@ -1257,7 +1277,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @return {Element}
      */
 
-    renderBlockButton = (type, icon) => {
+    public renderBlockButton(type, icon) {
         const isActive = this.hasBlock(type);
         const onMouseDown = e => {
             e.preventDefault();
@@ -1278,7 +1298,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @return {Element}
      */
 
-    renderAlignButton = (type, icon) => {
+    public renderAlignButton(type, icon) {
         const isActive = this.hasBlock(type);
         const onMouseDown = e => {
             e.preventDefault();
@@ -1299,7 +1319,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @return {Element}
      */
 
-    renderInlineButton = (type, icon) => {
+    public renderInlineButton(type, icon) {
         const isActive = this.hasInline(type);
         const onMouseDown = e => {
             e.preventDefault();
@@ -1318,7 +1338,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @return {Element}
      */
 
-    renderEditor = () => {
+    public renderEditor = () => {
         let editor = <Editor
             placeholder={'Enter some rich text...'}
             state={this.state.state}
@@ -1336,5 +1356,5 @@ export class PaperSlate extends React.Component<any, any> {
                 {editor}
             </div>
         )
-    };
+    }
 }

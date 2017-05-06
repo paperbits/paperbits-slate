@@ -3,13 +3,8 @@ var typescript = require("typescript");
 var typescriptCompiler = require("gulp-typescript");
 var sourcemaps = require("gulp-sourcemaps");
 var browserify = require("browserify");
-var source = require('vinyl-source-stream');
-var tsify = require('tsify');
-
-
-//let selectedTheme = "paperbits";
-//let selectedTheme = "hostmeapp";
-let selectedTheme = "hostmeapp-local";
+var source = require("vinyl-source-stream");
+var tsify = require("tsify");
 
 function handleError(error) {
     console.error("ERROR");
@@ -17,8 +12,7 @@ function handleError(error) {
     this.emit("end");
 }
 
-
-gulp.task("default", function () {
+gulp.task("typescript", function () {
     var typescriptProject = typescriptCompiler.createProject("tsconfig.json", {
         typescript: typescript
     });
@@ -30,3 +24,10 @@ gulp.task("default", function () {
         .pipe(source("build.dev.js"))
         .pipe(gulp.dest("./src/dist"));
 });
+
+gulp.task("watch", function () {
+    gulp.watch(["src/**/*.ts", "src/**/*.tsx"], ["typescript"]).on("error", handleError);
+});
+
+
+gulp.task("default", ["typescript", "watch"]);
