@@ -98,7 +98,7 @@ export class PaperSlate extends React.Component<any, any> {
         selectionChangeListeners: [],
         disabledListeners: [],
         enabledListeners: []
-    };
+    }
 
     constructor() {
         super();
@@ -127,30 +127,31 @@ export class PaperSlate extends React.Component<any, any> {
         this.me = ReactDOM.render(this.reactElement, parentElement, () => { });
 
         return this.me;
-    };
+    }
 
     public setInitialState(initialState) {
         this.state.state = Raw.deserialize(initialState, { terse: true });
-    };
+    }
 
     public updateState(newState) {
         let state = Raw.deserialize(newState, { terse: true });
         this.getMyself().setState({ state })
-    };
+    }
 
     public getState() {
         return Raw.serialize(this.getMyself().state.state, { terse: true });
-    };
+    }
 
     public getSelectionPosition() {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
+
         return {
             "anchorKey": state.selection.anchorKey,
             "anchorOffset": state.selection.anchorOffset,
             "focusKey": state.selection.focusKey,
             "focusOffset": state.selection.focusOffset,
-        };
-    };
+        }
+    }
 
     public setSelectionPosition(selectionPosition, focus) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
@@ -169,14 +170,14 @@ export class PaperSlate extends React.Component<any, any> {
         }
 
         this.getMyself().forceUpdate();
-    };
+    }
 
     public addSelectionChangeListener(callback) {
         let { selectionChangeListeners } = this.state;
         selectionChangeListeners.push(callback);
         this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public removeSelectionChangeListener(callback) {
         let { selectionChangeListeners } = this.state;
@@ -188,14 +189,14 @@ export class PaperSlate extends React.Component<any, any> {
         }
         this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public addDisabledListener(callback) {
         let { disabledListeners } = this.state;
         disabledListeners.push(callback);
         this.getMyself().setState({ disabledListeners: disabledListeners });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public removeDisabledListener(callback) {
         let { disabledListeners } = this.state;
@@ -207,14 +208,14 @@ export class PaperSlate extends React.Component<any, any> {
         }
         this.getMyself().setState({ disabledListeners: disabledListeners });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public addEnabledListener(callback) {
         let { enabledListeners } = this.state;
         enabledListeners.push(callback);
         this.getMyself().setState({ enabledListeners: enabledListeners });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public removeEnabledListener(callback) {
         let { enabledListeners } = this.state;
@@ -226,7 +227,7 @@ export class PaperSlate extends React.Component<any, any> {
         }
         this.getMyself().setState({ enabledListeners: enabledListeners });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public notifyListeners(listeners) {
         for (let i = 0; i < listeners.length; i++) {
@@ -237,7 +238,7 @@ export class PaperSlate extends React.Component<any, any> {
     public addOpenLinkEditorListener(callback) {
         this.getMyself().setState({ getHrefData: callback });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public getSelectionState() {
         const state = {
@@ -257,10 +258,12 @@ export class PaperSlate extends React.Component<any, any> {
             ul: this.hasBlock('bulleted-list'),
             intentions: this.getIntentions(),
             normal: false
-        };
+        }
+
         state.normal = !(state.h1 || state.h2 || state.h3 || state.h4 || state.h4 || state.h5 || state.h6 || state.quote || state.code);
+
         return state;
-    };
+    }
 
     public getIntentions() {
         var result = {
@@ -444,7 +447,7 @@ export class PaperSlate extends React.Component<any, any> {
 
         this.getMyself() ? this.getMyself().setState({ state: state }) : this.setState({ state: state });
         this.getMyself().forceUpdate();
-    };
+    }
 
     public toggleCategory(category, intentionFn, type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
@@ -501,7 +504,7 @@ export class PaperSlate extends React.Component<any, any> {
         })
 
         this.getMyself().forceUpdate();
-    };
+    }
 
     public toggleInlineCategory(state, node, category, intentionFn, type) {
         let data;
@@ -522,7 +525,7 @@ export class PaperSlate extends React.Component<any, any> {
             state = this.updateCustomMark(state, data, newData, category, intentionFn)
         }
         return state;
-    };
+    }
 
     public changeIntentionForInline(state, node, intentionFn, type, operation, category) {
         let data;
@@ -533,21 +536,21 @@ export class PaperSlate extends React.Component<any, any> {
         let newData = this.createOrUpdateIntention(data, intentionFn, operation);
 
         return this.updateCustomMark(state, data, newData, category, intentionFn);
-    };
+    }
 
     public toggleBlockCategory(state, node, category, intentionFn, type) {
         let { data } = node;
         let newData = this.createOrUpdateCategory(data, category, intentionFn);
 
         return this.updateCustomBlock(state, data, newData);
-    };
+    }
 
     public changeIntentionForBlock(state, node, intentionFn, type, operation) {
         let { data } = node;
         let newData = this.createOrUpdateIntention(data, intentionFn, operation);
 
         return this.updateCustomBlock(state, data, newData);
-    };
+    }
 
     public createOrUpdateCategory(data, category, intentionFn) {
         if (!data) {
@@ -671,11 +674,11 @@ export class PaperSlate extends React.Component<any, any> {
 
     public toggleAlignment(intentionFn) {
         this.toggleCategory('alignment', intentionFn, 'block')
-    };
+    }
 
     public toggleColor(intentionFn) {
         this.toggleCategory('color', intentionFn, 'inline')
-    };
+    }
 
     public resetToNormal() {
         this.hasBlock("heading-one") && this.toggleH1(),
@@ -766,7 +769,7 @@ export class PaperSlate extends React.Component<any, any> {
             this.setState({ state })
         }
         this.getMyself().forceUpdate();
-    };
+    }
 
     public getHyperlink() {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
@@ -782,7 +785,7 @@ export class PaperSlate extends React.Component<any, any> {
             data[dataEntries[i][0]] = dataEntries[i][1];
         }
         return data;
-    };
+    }
 
     public removeHyperlink() {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
@@ -801,7 +804,7 @@ export class PaperSlate extends React.Component<any, any> {
             this.setState({ state })
         }
         this.getMyself().forceUpdate();
-    };
+    }
 
 
     // private
@@ -815,7 +818,7 @@ export class PaperSlate extends React.Component<any, any> {
     public hasMark(type): boolean {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.marks.some(mark => mark.type == type)
-    };
+    }
 
     public getMarkData(type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
@@ -838,7 +841,7 @@ export class PaperSlate extends React.Component<any, any> {
     public hasBlock(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.type == type)
-    };
+    }
 
     /**
      * Check if the any of the currently selected blocks have the same data.
@@ -849,7 +852,7 @@ export class PaperSlate extends React.Component<any, any> {
     public has(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.type == type)
-    };
+    }
 
     /**
      * Check if the any of the currently selected blocks has alignment of `type`.
@@ -860,7 +863,7 @@ export class PaperSlate extends React.Component<any, any> {
     public isAligned(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.data.get("alignment") == type)
-    };
+    }
 
     /**
      * Check if the any of the currently selected inlines are of `type`.
@@ -871,7 +874,7 @@ export class PaperSlate extends React.Component<any, any> {
     public hasInline(type): boolean {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.inlines.some(node => node.type == type)
-    };
+    }
 
     public onSelectionChange(selection, state) {
         this.getMyself().setState({ state });
@@ -887,7 +890,7 @@ export class PaperSlate extends React.Component<any, any> {
      */
     public onChange(state) {
         this.setState({ state });
-    };
+    }
 
     /**
      * On key down, if it's a formatting command toggle a mark.
@@ -928,7 +931,7 @@ export class PaperSlate extends React.Component<any, any> {
         e.preventDefault();
 
         return state;
-    };
+    }
 
     public onClickStyled(style) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state
@@ -992,7 +995,7 @@ export class PaperSlate extends React.Component<any, any> {
         else {
             this.setState({ state })
         }
-    };
+    }
 
     public onClickRemoveMark(type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state
@@ -1034,7 +1037,7 @@ export class PaperSlate extends React.Component<any, any> {
             default:
                 throw new Error("undefined inline type: " + type);
         }
-    };
+    }
 
     /**
      * When a align button is clicked, toggle the align type.
@@ -1056,7 +1059,7 @@ export class PaperSlate extends React.Component<any, any> {
         else {
             this.setState({ state })
         }
-    };
+    }
 
     /**
      * When a block button is clicked, toggle the block type.
@@ -1123,7 +1126,7 @@ export class PaperSlate extends React.Component<any, any> {
         else {
             this.setState({ state })
         }
-    };
+    }
 
     /**
      * On paste, if the text is a link, wrap the selection in a link.
@@ -1154,7 +1157,7 @@ export class PaperSlate extends React.Component<any, any> {
             })
             .moveToOffsets(anchorOffset, anchorOffset + data.text.length)
             .apply()
-    };
+    }
 
     public onClickLink(): void {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
@@ -1186,7 +1189,7 @@ export class PaperSlate extends React.Component<any, any> {
             .apply();
 
         this.setState({ state })
-    };
+    }
 
     /**
      * Render.
@@ -1209,7 +1212,7 @@ export class PaperSlate extends React.Component<any, any> {
                 </div>
             )
         }
-    };
+    }
 
     /**
      * Render the toolbar.
@@ -1253,13 +1256,14 @@ export class PaperSlate extends React.Component<any, any> {
         const onMouseDown = e => {
             e.preventDefault();
             this.onClickMark(type)
-        };
+        }
+
         return (
             <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
                 <span className="material-icons">{icon}</span>
             </span>
         )
-    };
+    }
 
     /**
      * Render a block-toggling toolbar button.
@@ -1274,13 +1278,14 @@ export class PaperSlate extends React.Component<any, any> {
         const onMouseDown = e => {
             e.preventDefault();
             this.onClickBlock(type);
-        };
+        }
+
         return (
             <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
                 <span className="material-icons">{icon}</span>
             </span>
         )
-    };
+    }
 
     /**
      * Render a align-toggling toolbar button.
@@ -1295,13 +1300,14 @@ export class PaperSlate extends React.Component<any, any> {
         const onMouseDown = e => {
             e.preventDefault();
             this.onClickAlign(type);
-        };
+        }
+
         return (
             <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
                 <span className="material-icons">{icon}</span>
             </span>
         )
-    };
+    }
 
     /**
      * Render a inline-toggling toolbar button.
@@ -1316,13 +1322,14 @@ export class PaperSlate extends React.Component<any, any> {
         const onMouseDown = e => {
             e.preventDefault();
             this.onClickInline(type)
-        };
+        }
+        
         return (
             <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
                 <span className="material-icons">{icon}</span>
             </span>
         )
-    };
+    }
 
     /**
      * Render the Slate editor.

@@ -1,5 +1,3 @@
-
-
 import { PaperSlate } from './paperslate/editor'
 import { initialState } from './paperslate/state'
 
@@ -19,7 +17,7 @@ paperSlate.addOpenLinkEditorListener(() => {
     return {
         href: window.prompt("Enter URL:"),
         target: "blank"
-    };
+    }
 });
 
 window["paperSlate"] = paperSlate;
