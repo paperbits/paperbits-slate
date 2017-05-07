@@ -2,9 +2,6 @@ var gulp = require("gulp");
 var typescript = require("typescript");
 var typescriptCompiler = require("gulp-typescript");
 var sourcemaps = require("gulp-sourcemaps");
-var browserify = require("browserify");
-var source = require("vinyl-source-stream");
-var tsify = require("tsify");
 
 function handleError(error) {
     console.error("ERROR");
@@ -17,17 +14,17 @@ gulp.task("typescript", function () {
         typescript: typescript
     });
 
-    return browserify({ debug: true, entries: ["src/index.ts"] })
-        .plugin(tsify, { typescript: require("typescript") })
-        .bundle()
-        .on("error", handleError)
-        .pipe(source("build.dev.js"))
-        .pipe(gulp.dest("./src/dist"));
+    var tsResult = typescriptProject
+        .src()
+        .pipe(typescriptProject())
+
+    return tsResult
+        .js
+        .pipe(gulp.dest("../paperbits-dev/node_modules/@paperbits/slate"));
 });
 
 gulp.task("watch", function () {
     gulp.watch(["src/**/*.ts", "src/**/*.tsx"], ["typescript"]).on("error", handleError);
 });
-
 
 gulp.task("default", ["typescript", "watch"]);

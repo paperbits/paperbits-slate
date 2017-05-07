@@ -1,91 +1,17 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import * as injector from 'react-frame-aware-selection-plugin';
 import { Editor, Mark, Raw, Data } from 'slate'
-import { Set, Seq, Collection, List, Map } from 'immutable'
-import { initialState } from './state'
-import * as injector from 'react-frame-aware-selection-plugin'
+import { Set, Seq, Collection, List, Map } from 'immutable';
+import { initialState } from './state';
+import { Utils } from "./utils";
 
-injector()
+injector();
 
-/**
- * Define the default node type.
- */
-
-export class PaperSlate extends React.Component<any, any> {
+export class SlateReactComponent extends React.Component<any, any> {
     static dirtyHack;
     static DEFAULT_NODE = "paragraph";
     static DEFAULT_ALIGNMENT = "align-left";
-
-    static Utils = {
-        createElement: function (tagName) {
-            return props => {
-                return PaperSlate.Utils.createReactElement(tagName, props)
-            }
-        },
-        createReactElement: function (tagName, props) {
-            let data = props.mark ? props.mark.data : props.node.data;
-            let intentions = data.get("intentions");
-            let categories = data.get("categories");
-
-            if (!intentions && !categories) {
-                return React.createElement(tagName, props.attributes, props.children)
-            }
-
-            if (!intentions) {
-                intentions = List(Object.keys(categories).map(k => categories[k]))
-            } else if (categories) {
-                intentions = List(Set(intentions).union(Object.keys(categories).map(k => categories[k])))
-            } else {
-                intentions = List(intentions)
-            }
-
-            let className = intentions.update((collection) => {
-                return collection.reduce((cn, fn) => cn + " " + PaperSlate.Configuration.IntentionsMap[fn](), "")
-            }).trim()
-
-            let attr = props.attributes || {}
-            Object.assign(attr, { className: className })
-
-            return props.children ? React.createElement(tagName, attr, props.children) : React.createElement(tagName, attr)
-        },
-        createLinkElement: function () {
-            return props => {
-                const { data } = props.node;
-                const href = data.get('href');
-                const target = data.get('target');
-                Object.assign(props.attributes, { href: href, target: target })
-                return PaperSlate.Utils.createReactElement("a", props)
-            }
-        }
-    }
-
-    static Configuration = {
-        IntentionsMap: {},
-        Schema: {
-            nodes: {
-                'block-quote': PaperSlate.Utils.createElement('blockquote'),
-                'bulleted-list': PaperSlate.Utils.createElement('ul'),
-                'heading-one': PaperSlate.Utils.createElement('h1'),
-                'heading-two': PaperSlate.Utils.createElement('h2'),
-                'heading-three': PaperSlate.Utils.createElement('h3'),
-                'heading-four': PaperSlate.Utils.createElement('h4'),
-                'heading-five': PaperSlate.Utils.createElement('h5'),
-                'heading-six': PaperSlate.Utils.createElement('h6'),
-                'list-item': PaperSlate.Utils.createElement('li'),
-                'numbered-list': PaperSlate.Utils.createElement('ol'),
-                'link': PaperSlate.Utils.createLinkElement(),
-                'code': PaperSlate.Utils.createElement('pre'),
-                'paragraph': PaperSlate.Utils.createElement("p"),
-                'custom': PaperSlate.Utils.createElement("div")
-            },
-            marks: {
-                bold: PaperSlate.Utils.createElement('b'),
-                italic: PaperSlate.Utils.createElement('i'),
-                underlined: PaperSlate.Utils.createElement('u'),
-                custom: PaperSlate.Utils.createElement('span')
-            }
-        }
-    }
 
     editor = null;
     me = null;
@@ -100,15 +26,20 @@ export class PaperSlate extends React.Component<any, any> {
         enabledListeners: []
     }
 
-    constructor() {
+    constructor(intentionsMap: Object) {
         super();
 
-        this.onSelectionChange = this.onSelectionChange.bind(this);
+        Object.assign(Utils.Configuration.IntentionsMap, intentionsMap);
 
-        if (PaperSlate.dirtyHack) {
-            let getMyself = PaperSlate.dirtyHack;
+        this.onSelectionChange = this.onSelectionChange.bind(this);
+        this.onChange = this.onChange.bind(this);
+        this.toggleInlineCategory = this.toggleInlineCategory.bind(this);
+        this.createOrUpdateCategory = this.createOrUpdateCategory.bind(this);
+
+        if (SlateReactComponent.dirtyHack) {
+            let getMyself = SlateReactComponent.dirtyHack;
             this.getMyself = () => this.me ? this.me : (this.me = getMyself());
-            PaperSlate.dirtyHack = null;
+            SlateReactComponent.dirtyHack = null;
         }
     }
 
@@ -119,9 +50,9 @@ export class PaperSlate extends React.Component<any, any> {
     public renderToContainer(parentElement) {
         let self = this;
 
-        PaperSlate.dirtyHack = () => self.me;
+        SlateReactComponent.dirtyHack = () => self.me;
 
-        this.reactElement = React.createElement(PaperSlate);
+        this.reactElement = React.createElement(SlateReactComponent);
         this.parentElement = parentElement;
 
         this.me = ReactDOM.render(this.reactElement, parentElement, () => { });
@@ -815,12 +746,12 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    public hasMark(type): boolean {
+    private hasMark(type): boolean {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.marks.some(mark => mark.type == type)
     }
 
-    public getMarkData(type) {
+    private getMarkData(type) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         let mark = state.marks.first(function (e) {
             return e.type == type
@@ -838,7 +769,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    public hasBlock(type) {
+    private hasBlock(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.type == type)
     }
@@ -849,7 +780,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    public has(type) {
+    private has(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.type == type)
     }
@@ -860,7 +791,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    public isAligned(type) {
+    private isAligned(type) {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.blocks.some(node => node.data.get("alignment") == type)
     }
@@ -871,12 +802,12 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    public hasInline(type): boolean {
+    private hasInline(type): boolean {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
         return state.inlines.some(node => node.type == type)
     }
 
-    public onSelectionChange(selection, state) {
+    private onSelectionChange(selection, state) {
         this.getMyself().setState({ state });
         this.getMyself().state.state = state;
         this.getMyself().forceUpdate();
@@ -900,7 +831,7 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {State} state
      * @return {State}
      */
-    public onKeyDown(e, data, state) {
+    private onKeyDown(e, data, state) {
         if (!data.isMod)
             return;
 
@@ -933,7 +864,7 @@ export class PaperSlate extends React.Component<any, any> {
         return state;
     }
 
-    public onClickStyled(style) {
+    private onClickStyled(style) {
         let { state } = this.getMyself() ? this.getMyself().state : this.state
         let isExpanded = state.isExpanded
         let selection = state.selection
@@ -1078,7 +1009,7 @@ export class PaperSlate extends React.Component<any, any> {
             if (isList) {
                 transform = transform
                     .setBlock({
-                        type: isActive ? PaperSlate.DEFAULT_NODE : type
+                        type: isActive ? SlateReactComponent.DEFAULT_NODE : type
                     })
                     .unwrapBlock('bulleted-list')
                     .unwrapBlock('numbered-list')
@@ -1087,7 +1018,7 @@ export class PaperSlate extends React.Component<any, any> {
             else {
                 transform = transform
                     .setBlock({
-                        type: isActive ? PaperSlate.DEFAULT_NODE : type
+                        type: isActive ? SlateReactComponent.DEFAULT_NODE : type
                     })
             }
         }
@@ -1102,7 +1033,7 @@ export class PaperSlate extends React.Component<any, any> {
             if (isList && isType) {
                 transform = transform
                     .setBlock({
-                        type: PaperSlate.DEFAULT_NODE
+                        type: SlateReactComponent.DEFAULT_NODE
                     })
                     .unwrapBlock('bulleted-list')
                     .unwrapBlock('numbered-list')
@@ -1135,7 +1066,6 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {Object} data
      * @param {State} state
      */
-
     public onPaste(e, data, state) {
         if (state.isCollapsed) {
             return;
@@ -1294,7 +1224,6 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} icon
      * @return {Element}
      */
-
     public renderAlignButton(type, icon) {
         const isActive = this.hasBlock(type);
         const onMouseDown = e => {
@@ -1316,14 +1245,13 @@ export class PaperSlate extends React.Component<any, any> {
      * @param {String} icon
      * @return {Element}
      */
-
     public renderInlineButton(type, icon) {
         const isActive = this.hasInline(type);
         const onMouseDown = e => {
             e.preventDefault();
             this.onClickInline(type)
         }
-        
+
         return (
             <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
                 <span className="material-icons">{icon}</span>
@@ -1341,13 +1269,14 @@ export class PaperSlate extends React.Component<any, any> {
         let editor = <Editor
             placeholder={'Enter some rich text...'}
             state={this.state.state}
-            schema={PaperSlate.Configuration.Schema}
+            schema={Utils.Configuration.Schema}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
             onPaste={this.onPaste}
             readOnly={this.state.state.readOnly}
             onSelectionChange={this.onSelectionChange}
         />;
+
         this.editor = editor;
 
         return (
