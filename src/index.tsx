@@ -738,15 +738,14 @@ export class SlateReactComponent extends React.Component<any, any> {
             state = state.transform().select(selectionPosition).apply();
         }
 
-        const hasInline = this.hasInline('link');
+        const hasLink = this.hasInline('link');
         let { selection } = state;
 
-        if (selection.startKey == selection.endKey && selection.endOffset == selection.startOffset) {
+        if (!selection.isExpanded) {
             return;
         }
 
-        if (hasInline) {
-
+        if (hasLink) {
             state = state
                 .transform()
                 .unwrapInlineAtRange(selection, 'link')
@@ -762,6 +761,13 @@ export class SlateReactComponent extends React.Component<any, any> {
                     target: hyperlinkData.target
                 }
             })
+            .apply();
+
+        let link = state.inlines.find(node => node.type == 'link');
+        
+        state = state.transform()
+            .extendToEndOf(link)
+            .focus()
             .apply();
 
         if (this.getMyself()) {
