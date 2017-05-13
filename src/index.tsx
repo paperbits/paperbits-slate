@@ -5,6 +5,7 @@ import { Editor, Mark, Raw, Data } from 'slate'
 import { Set, Seq, Collection, List, Map } from 'immutable';
 import { initialState } from './state';
 import { Utils } from "./utils";
+import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 
 injector();
 
@@ -114,11 +115,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         }
     }
 
-    public getMyself() {
+    public getMyself(): SlateReactComponent {
         return this.me;
     }
 
-    public renderToContainer(parentElement) {
+    public renderToContainer(parentElement: HTMLElement) {
         let self = this;
 
         SlateReactComponent.dirtyHack = () => self.me;
@@ -341,76 +342,76 @@ export class SlateReactComponent extends React.Component<any, any> {
         return result;
     }
 
-    public toggleBold() {
+    public toggleBold(): void {
         this.onClickMark('bold');
         this.getMyself().forceUpdate();
     }
 
-    public toggleItalic() {
+    public toggleItalic(): void {
         this.onClickMark('italic');
         this.getMyself().forceUpdate();
     }
 
-    public toggleUnderlined() {
+    public toggleUnderlined(): void {
         this.onClickMark('underlined');
         this.getMyself().forceUpdate();
     }
 
-    public toggleUl() {
+    public toggleUl(): void {
         this.onClickBlock('bulleted-list');
         this.getMyself().forceUpdate();
     }
 
-    public toggleOl() {
+    public toggleOl(): void {
         this.onClickBlock('numbered-list');
         this.getMyself().forceUpdate();
     }
 
-    public toggleH1() {
+    public toggleH1(): void {
         this.onClickBlock('heading-one');
         this.getMyself().forceUpdate();
     }
 
-    public toggleH2() {
+    public toggleH2(): void {
         this.onClickBlock('heading-two');
         this.getMyself().forceUpdate();
     }
 
-    public toggleH3() {
+    public toggleH3(): void {
         this.onClickBlock('heading-three');
         this.getMyself().forceUpdate();
     }
 
-    public toggleH4() {
+    public toggleH4(): void {
         this.onClickBlock('heading-four');
         this.getMyself().forceUpdate();
     }
 
-    public toggleH5() {
+    public toggleH5(): void {
         this.onClickBlock('heading-five');
         this.getMyself().forceUpdate();
     }
 
-    public toggleH6() {
+    public toggleH6(): void {
         this.onClickBlock('heading-six');
         this.getMyself().forceUpdate();
     }
 
-    public toggleQuote() {
+    public toggleQuote(): void {
         this.onClickBlock('block-quote');
         this.getMyself().forceUpdate();
     }
 
-    public toggleCode() {
+    public toggleCode(): void {
         this.onClickBlock('code');
         this.getMyself().forceUpdate();
     }
 
-    public setIntention(intentionFn, type) {
+    public setIntention(intentionFn, type): void {
         this.changeIntention(intentionFn, type, 'set');
     }
 
-    public resetIntention(intentionFn, type) {
+    public resetIntention(intentionFn, type): void {
         this.changeIntention(intentionFn, type, 'reset');
     }
 
@@ -451,7 +452,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public toggleCategory(category, intentionFn, type) {
+    public toggleCategory(category, intentionFn, type): void {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         let isExpanded = state.isExpanded
         let selection = state.selection
@@ -776,19 +777,23 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public getHyperlink() {
+    public getHyperlink(): IHyperlink {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         const hasInline = this.hasInline('link');
 
-        let link = state.inlines.find(node => node.type == 'link')
+        let link = state.inlines.find(node => node.type == 'link');
+
         if (!link) {
             return null;
         }
-        let data = {};
+
+        let data: any = {};
         let dataEntries = link.data._root.entries;
+
         for (let i = 0; i < dataEntries.length; i++) {
             data[dataEntries[i][0]] = dataEntries[i][1];
         }
+
         return data;
     }
 

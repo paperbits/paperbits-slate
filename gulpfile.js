@@ -20,7 +20,7 @@ gulp.task("typescript", function () {
 
     return tsResult
         .js
-        .pipe(gulp.dest("../paperbits-dev/node_modules/@paperbits/slate"));
+        .pipe(gulp.dest("./dist"));
 });
 
 gulp.task("watch", function () {
