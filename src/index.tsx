@@ -731,14 +731,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.notifyListeners(this.getMyself().state.disabledListeners);
     }
 
-    public setHyperlink(hyperlinkData, selectionPosition) {
+    public setHyperlink(hyperlinkData): void {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
-        if (selectionPosition) {
-            state = state.transform().select(selectionPosition).apply();
-        }
-
         const hasLink = this.hasInline('link');
+
         let { selection } = state;
 
         if (!selection.isExpanded) {
@@ -764,7 +761,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             .apply();
 
         let link = state.inlines.find(node => node.type == 'link');
-        
+
         state = state.transform()
             .extendToEndOf(link)
             .focus()
