@@ -103,11 +103,6 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.onPaste = this.onPaste.bind(this);
         this.onClickLink = this.onClickLink.bind(this);
         this.render = this.render.bind(this);
-        this.renderToolbar = this.renderToolbar.bind(this);
-        this.renderMarkButton = this.renderMarkButton.bind(this);
-        this.renderBlockButton = this.renderBlockButton.bind(this);
-        this.renderAlignButton = this.renderAlignButton.bind(this);
-        this.renderInlineButton = this.renderInlineButton.bind(this);
         this.renderEditor = this.renderEditor.bind(this);
 
         if (SlateReactComponent.dirtyHack) {
@@ -1208,137 +1203,8 @@ export class SlateReactComponent extends React.Component<any, any> {
      *
      * @return {Element}
      */
-
     public render() {
-        if (this.showToolbar) {
-            return (
-                <div>
-                    {this.renderToolbar()}
-                    {this.renderEditor()}
-                </div>
-            )
-        } else {
-            return (
-                <div>
-                    {this.renderEditor()}
-                </div>
-            )
-        }
-    }
-
-    /**
-     * Render the toolbar.
-     *
-     * @return {Element}
-     */
-
-    public renderToolbar() {
-        return
-        <div className="menu toolbar-menu">
-            {this.renderMarkButton('bold', 'format_bold')}
-            {this.renderMarkButton('italic', 'format_italic')}
-            {this.renderMarkButton('underlined', 'format_underlined')}
-            {this.renderInlineButton('link', 'link')}
-            {this.renderBlockButton('code', 'code')}
-            {this.renderBlockButton('heading-one', 'looks_one')}
-            {this.renderBlockButton('heading-two', 'looks_two')}
-            {this.renderBlockButton('heading-three', 'looks_3')}
-            {this.renderBlockButton('heading-four', 'looks_4')}
-            {this.renderBlockButton('heading-five', 'looks_5')}
-            {this.renderBlockButton('heading-six', 'looks_6')}
-            {this.renderBlockButton('block-quote', 'format_quote')}
-            {this.renderBlockButton('numbered-list', 'format_list_numbered')}
-            {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
-            {this.renderAlignButton('align-left', 'format_align_left')}
-            {this.renderAlignButton('align-center', 'format_align_center')}
-            {this.renderAlignButton('align-right', 'format_align_right')}
-            {this.renderAlignButton('align-justify', 'format_align_justify')}
-        </div>
-    }
-
-    /**
-     * Render a mark-toggling toolbar button.
-     *
-     * @param {String} type
-     * @param {String} icon
-     * @return {Element}
-     */
-    public renderMarkButton(type, icon) {
-        const isActive = this.hasMark(type);
-        const onMouseDown = e => {
-            e.preventDefault();
-            this.onClickMark(type)
-        }
-
-        return (
-            <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
-                <span className="material-icons">{icon}</span>
-            </span>
-        )
-    }
-
-    /**
-     * Render a block-toggling toolbar button.
-     *
-     * @param {String} type
-     * @param {String} icon
-     * @return {Element}
-     */
-
-    public renderBlockButton(type, icon) {
-        const isActive = this.hasBlock(type);
-        const onMouseDown = e => {
-            e.preventDefault();
-            this.onClickBlock(type);
-        }
-
-        return (
-            <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
-                <span className="material-icons">{icon}</span>
-            </span>
-        )
-    }
-
-    /**
-     * Render a align-toggling toolbar button.
-     *
-     * @param {String} type
-     * @param {String} icon
-     * @return {Element}
-     */
-    public renderAlignButton(type, icon) {
-        const isActive = this.hasBlock(type);
-        const onMouseDown = e => {
-            e.preventDefault();
-            this.onClickAlign(type);
-        }
-
-        return (
-            <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
-                <span className="material-icons">{icon}</span>
-            </span>
-        )
-    }
-
-    /**
-     * Render a inline-toggling toolbar button.
-     *
-     * @param {String} type
-     * @param {String} icon
-     * @return {Element}
-     */
-    public renderInlineButton(type, icon) {
-        const isActive = this.hasInline(type);
-        const onMouseDown = e => {
-            e.preventDefault();
-            this.onClickInline(type)
-        }
-
-        return (
-            <span className="button" onMouseDown={onMouseDown} data-active={isActive}>
-                <span className="material-icons">{icon}</span>
-            </span>
-        )
+        return this.renderEditor();
     }
 
     /**
@@ -1362,5 +1228,3 @@ export class SlateReactComponent extends React.Component<any, any> {
         return editor
     }
 }
-
-
