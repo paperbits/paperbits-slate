@@ -1,4 +1,4 @@
-import { SlateReactComponent } from "./index";
+import { SlateReactComponent } from "./slateReactComponent";
 import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from '@paperbits/common/editing/IHtmlEditor';
@@ -191,8 +191,12 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.eventManager.removeEventListener("onEscape", this.disable);
     }
 
-    public addSelectionChangeListener(callback: () => void): void {
-        this.slateReactComponent.addSelectionChangeListener(callback);
+    public addSelectionChangeListener(callback: (htmlEditor: IHtmlEditor) => void): void {
+        let callbackWrapper = () => {
+            callback(this);
+        }
+
+        this.slateReactComponent.addSelectionChangeListener(callbackWrapper);
     }
 
     public removeSelectionChangeListener(callback: () => void): void {

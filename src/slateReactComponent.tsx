@@ -14,11 +14,13 @@ export class SlateReactComponent extends React.Component<any, any> {
     static DEFAULT_NODE = "paragraph";
     static DEFAULT_ALIGNMENT = "align-left";
 
-    editor = null;
+    private readOnly = true;
+
     me = null;
     parentElement = null;
     reactElement = null;
     showToolbar = false;
+
     state = {
         state: Raw.deserialize(initialState, { terse: true }),
         getHrefData: null,
@@ -119,7 +121,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         return this.me;
     }
 
-    public renderToContainer(parentElement: HTMLElement) {
+    public renderToContainer(parentElement: HTMLElement): SlateReactComponent {
         let self = this;
 
         SlateReactComponent.dirtyHack = () => self.me;
@@ -132,11 +134,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         return this.me;
     }
 
-    public setInitialState(initialState) {
+    public setInitialState(initialState): void {
         this.state.state = Raw.deserialize(initialState, { terse: true });
     }
 
-    public updateState(newState) {
+    public updateState(newState): void {
         let state = Raw.deserialize(newState, { terse: true });
         this.getMyself().setState({ state })
     }
@@ -176,13 +178,15 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public addSelectionChangeListener(callback) {
-        let { selectionChangeListeners } = this.state;
+        let selectionChangeListeners = this.state.selectionChangeListeners;
+
         selectionChangeListeners.push(callback);
+
         this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
     }
 
-    public removeSelectionChangeListener(callback) {
+    public removeSelectionChangeListener(callback): void {
         let { selectionChangeListeners } = this.state;
         for (let i = 0; i < selectionChangeListeners.length; i++) {
             if (selectionChangeListeners[i] === callback) {
@@ -194,14 +198,16 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public addDisabledListener(callback) {
+    public addDisabledListener(callback): void {
         let { disabledListeners } = this.state;
+
         disabledListeners.push(callback);
+
         this.getMyself().setState({ disabledListeners: disabledListeners });
         this.getMyself().forceUpdate();
     }
 
-    public removeDisabledListener(callback) {
+    public removeDisabledListener(callback): void {
         let { disabledListeners } = this.state;
         for (let i = 0; i < disabledListeners.length; i++) {
             if (disabledListeners[i] === callback) {
@@ -213,14 +219,14 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public addEnabledListener(callback) {
+    public addEnabledListener(callback): void {
         let { enabledListeners } = this.state;
         enabledListeners.push(callback);
         this.getMyself().setState({ enabledListeners: enabledListeners });
         this.getMyself().forceUpdate();
     }
 
-    public removeEnabledListener(callback) {
+    public removeEnabledListener(callback): void {
         let { enabledListeners } = this.state;
         for (let i = 0; i < enabledListeners.length; i++) {
             if (enabledListeners[i] === callback) {
@@ -232,13 +238,13 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public notifyListeners(listeners) {
+    public notifyListeners(listeners): void {
         for (let i = 0; i < listeners.length; i++) {
             listeners[i]();
         }
     }
 
-    public addOpenLinkEditorListener(callback) {
+    public addOpenLinkEditorListener(callback): void {
         this.getMyself().setState({ getHrefData: callback });
         this.getMyself().forceUpdate();
     }
@@ -415,12 +421,10 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.changeIntention(intentionFn, type, 'reset');
     }
 
-    public changeIntention(intentionFn, type, operation) {
+    public changeIntention(intentionFn, type, operation): void {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
         let isExpanded = state.isExpanded
         let selection = state.selection;
-
-
         let nodes;
         let change;
 
@@ -446,7 +450,6 @@ export class SlateReactComponent extends React.Component<any, any> {
         if (isExpanded) {
             state = state.transform().select(selection).focus().apply()
         }
-
 
         this.getMyself() ? this.getMyself().setState({ state: state }) : this.setState({ state: state });
         this.getMyself().forceUpdate();
@@ -721,18 +724,18 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public enable(): void {
-        this.getMyself().setState({ readOnly: false });
+        this.readOnly = false;
         this.getMyself().forceUpdate();
-        this.notifyListeners(this.getMyself().state.enabledListeners);
     }
 
     public disable(): void {
-        this.getMyself().setState({ readOnly: true });
+        this.readOnly = true;
         this.getMyself().forceUpdate();
-        this.notifyListeners(this.getMyself().state.disabledListeners);
     }
 
     public setHyperlink(hyperlinkData): void {
+        this.getMyself().forceUpdate();
+
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
         const hasLink = this.hasInline('link');
@@ -1352,17 +1355,11 @@ export class SlateReactComponent extends React.Component<any, any> {
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
             onPaste={this.onPaste}
-            readOnly={this.state.state.readOnly}
+            readOnly={this.readOnly}
             onSelectionChange={this.onSelectionChange}
         />;
 
-        this.editor = editor;
-
-        return (
-            <div className="editor">
-                {editor}
-            </div>
-        )
+        return editor
     }
 }
 
