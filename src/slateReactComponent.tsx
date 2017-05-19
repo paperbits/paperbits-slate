@@ -90,7 +90,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.hasBlock = this.hasBlock.bind(this);
         this.has = this.has.bind(this);
         this.isAligned = this.isAligned.bind(this);
-        this.hasInline = this.hasInline.bind(this);
+        this.findInline = this.findInline.bind(this);
         this.onSelectionChange = this.onSelectionChange.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
@@ -249,7 +249,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             bold: this.hasMark('bold'),
             italic: this.hasMark('italic'),
             underlined: this.hasMark('underlined'),
-            hyperlink: this.hasInline('link'),
+            hyperlink: this.findInline('link'),
             h1: this.hasBlock('heading-one'),
             h2: this.hasBlock('heading-two'),
             h3: this.hasBlock('heading-three'),
@@ -728,12 +728,49 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public setHyperlink(hyperlinkData): void {
+    public clearSelection(): void {
+        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+
+        state = state.transform().blur().apply();
+
+        if (this.getMyself()) {
+            this.getMyself().setState({ state });
+        }
+        else {
+            this.setState({ state })
+        }
         this.getMyself().forceUpdate();
+    }
+
+    public setSelection(selection): void {
+        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+
+        let newSelection = {
+            anchorKey: selection.anchorNode.parentElement.parentElement.attributes.getNamedItem("data-key").value,
+            anchorOffset: selection.anchorOffset,
+            focusKey: selection.focusNode.parentElement.parentElement.attributes.getNamedItem("data-key").value,
+            focusOffset: selection.focusOffset,
+            isFocused: true
+        }
+
+        state = state.transform().select(newSelection).apply();
+
+        if (this.getMyself()) {
+            this.getMyself().setState({ state });
+        }
+        else {
+            this.setState({ state })
+        }
+        this.getMyself().forceUpdate();
+    }
+
+
+    public setHyperlink(hyperlink: IHyperlink): void {
+        //this.getMyself().forceUpdate();
 
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
 
-        const hasLink = this.hasInline('link');
+        const hasLink = this.findInline('link');
 
         let { selection } = state;
 
@@ -753,8 +790,9 @@ export class SlateReactComponent extends React.Component<any, any> {
             {
                 type: 'link',
                 data: {
-                    href: hyperlinkData.href,
-                    target: hyperlinkData.target
+                    href: hyperlink.href,
+                    target: hyperlink.target,
+                    permalinkKey: hyperlink.permalinkKey
                 }
             })
             .apply();
@@ -777,7 +815,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     public getHyperlink(): IHyperlink {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
-        const hasInline = this.hasInline('link');
+        const hasInline = this.findInline('link');
 
         let link = state.inlines.find(node => node.type == 'link');
 
@@ -795,9 +833,9 @@ export class SlateReactComponent extends React.Component<any, any> {
         return data;
     }
 
-    public removeHyperlink() {
+    public removeHyperlink(): void {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
-        const hasInline = this.hasInline('link');
+        const hasInline = this.findInline('link');
 
         if (hasInline) {
             state = state
@@ -879,9 +917,9 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    private hasInline(type): boolean {
+    private findInline(type): any {
         const { state } = this.getMyself() ? this.getMyself().state : this.state;
-        return state.inlines.some(node => node.type == type)
+        return state.inlines.find(node => node.type == type)
     }
 
     private onSelectionChange(selection, state) {
@@ -1175,7 +1213,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         let { anchorOffset, focusOffset } = state.selection;
 
-        const hasLink = this.hasInline('link');
+        const hasLink = this.findInline('link');
 
         if (hasLink) {
             state = state

@@ -222,4 +222,8 @@ export class SlateHtmlEditor implements IHtmlEditor {
     public setInitialState(state: any): void {
         this.slateReactComponent.setInitialState(state);
     }
+
+    public setSelection(selection: Selection): void {
+        this.slateReactComponent.setSelection(selection);
+    }
 }
