@@ -226,4 +226,8 @@ export class SlateHtmlEditor implements IHtmlEditor {
     public setSelection(selection: Selection): void {
         this.slateReactComponent.setSelection(selection);
     }
+
+    public expandSelection(): void {
+        this.slateReactComponent.expandSelection();
+    }
 }

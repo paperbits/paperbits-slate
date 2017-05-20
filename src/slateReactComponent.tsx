@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as injector from 'react-frame-aware-selection-plugin';
-import { Editor, Mark, Raw, Data } from 'slate'
+import { Editor, Mark, Raw, Data, State } from 'slate'
 import { Set, Seq, Collection, List, Map } from 'immutable';
 import { initialState } from './state';
 import { Utils } from "./utils";
@@ -90,7 +90,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.hasBlock = this.hasBlock.bind(this);
         this.has = this.has.bind(this);
         this.isAligned = this.isAligned.bind(this);
-        this.findInline = this.findInline.bind(this);
+        this.findInlineNode = this.findInlineNode.bind(this);
         this.onSelectionChange = this.onSelectionChange.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
@@ -138,12 +138,22 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().setState({ state })
     }
 
+    public applyState(state): void {
+        if (this.getMyself()) {
+            this.getMyself().setState({ state });
+        }
+        else {
+            this.setState({ state })
+        }
+        this.getMyself().forceUpdate();
+    }
+
     public getState() {
         return Raw.serialize(this.getMyself().state.state, { terse: true });
     }
 
     public getSelectionPosition() {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
 
         return {
             "anchorKey": state.selection.anchorKey,
@@ -154,7 +164,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public setSelectionPosition(selectionPosition, focus) {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
 
         if (focus) {
             state = state.transform().select(selectionPosition).focus().apply();
@@ -249,7 +259,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             bold: this.hasMark('bold'),
             italic: this.hasMark('italic'),
             underlined: this.hasMark('underlined'),
-            hyperlink: this.findInline('link'),
+            hyperlink: this.findInlineNode("link"),
             h1: this.hasBlock('heading-one'),
             h2: this.hasBlock('heading-two'),
             h3: this.hasBlock('heading-three'),
@@ -275,7 +285,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             inline: []
         }
 
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
         let { blocks } = state;
 
         let blockIntentions
@@ -417,7 +427,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public changeIntention(intentionFn, type, operation): void {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
         let isExpanded = state.isExpanded
         let selection = state.selection;
         let nodes;
@@ -451,7 +461,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public toggleCategory(category, intentionFn, type): void {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
         let isExpanded = state.isExpanded
         let selection = state.selection
 
@@ -694,7 +704,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public resetAllIntentions() {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
 
         state.blocks.forEach(block => {
             if (block.type == 'custom') {
@@ -728,23 +738,37 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public clearSelection(): void {
+    private getActualState(): State {
         let { state } = this.getMyself() ? this.getMyself().state : this.state;
+
+        return state;
+    }
+
+    public clearSelection(): void {
+        let state = this.getActualState();
 
         state = state.transform().blur().apply();
 
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
+        this.applyState(state);
+    }
+
+    public expandSelection(): void {
+        let state = this.getActualState();
+
+        const linkNode = this.findInlineNode("link");
+
+        if (linkNode) {
+            state = state
+                .transform()
+                .moveToRangeOf(linkNode)
+                .focus()
+                .apply();
+
+            this.applyState(state);
         }
-        else {
-            this.setState({ state })
-        }
-        this.getMyself().forceUpdate();
     }
 
     public setSelection(selection): void {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
-
         let newSelection = {
             anchorKey: selection.anchorNode.parentElement.parentElement.attributes.getNamedItem("data-key").value,
             anchorOffset: selection.anchorOffset,
@@ -753,26 +777,19 @@ export class SlateReactComponent extends React.Component<any, any> {
             isFocused: true
         }
 
+        let state = this.getActualState();
+
         state = state.transform().select(newSelection).apply();
 
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
-        this.getMyself().forceUpdate();
+        this.applyState(state);
     }
 
-
     public setHyperlink(hyperlink: IHyperlink): void {
-        //this.getMyself().forceUpdate();
+        let state = this.getActualState();
 
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        const hasLink = this.findInlineNode("link");
 
-        const hasLink = this.findInline('link');
-
-        let { selection } = state;
+        let selection = state.selection;
 
         if (!selection.isExpanded) {
             return;
@@ -781,14 +798,14 @@ export class SlateReactComponent extends React.Component<any, any> {
         if (hasLink) {
             state = state
                 .transform()
-                .unwrapInlineAtRange(selection, 'link')
+                .unwrapInlineAtRange(selection, "link")
                 .apply();
         }
 
         state = state.transform()
             .wrapInline(
             {
-                type: 'link',
+                type: "link",
                 data: {
                     href: hyperlink.href,
                     target: hyperlink.target,
@@ -797,61 +814,51 @@ export class SlateReactComponent extends React.Component<any, any> {
             })
             .apply();
 
-        let link = state.inlines.find(node => node.type == 'link');
+        let link = state.inlines.find(node => node.type == "link");
 
-        state = state.transform()
-            .extendToEndOf(link)
-            .focus()
-            .apply();
+        if (link) {
+            state = state.transform()
+                .moveToRangeOf(link)
+                .focus()
+                .apply();
+        }
 
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
-        this.getMyself().forceUpdate();
+        this.applyState(state);
     }
 
     public getHyperlink(): IHyperlink {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
-        const hasInline = this.findInline('link');
+        let state = this.getActualState();
+        const hasInline = this.findInlineNode("link");
 
-        let link = state.inlines.find(node => node.type == 'link');
+        let link = state.inlines.find(node => node.type == "link");
 
         if (!link) {
             return null;
         }
 
-        let data: any = {};
+        let hyperlink: any = {};
         let dataEntries = link.data._root.entries;
 
         for (let i = 0; i < dataEntries.length; i++) {
-            data[dataEntries[i][0]] = dataEntries[i][1];
+            hyperlink[dataEntries[i][0]] = dataEntries[i][1];
         }
 
-        return data;
+        return hyperlink;
     }
 
     public removeHyperlink(): void {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
-        const hasInline = this.findInline('link');
+        let state = this.getActualState();
+        const linkNode = this.findInlineNode("link");
 
-        if (hasInline) {
+        if (linkNode) {
             state = state
                 .transform()
-                .unwrapInline('link')
+                .unwrapInline("link")
                 .apply();
-        }
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
-        this.getMyself().forceUpdate();
-    }
 
+            this.applyState(state);
+        }
+    }
 
     // private
 
@@ -862,12 +869,12 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @return {Boolean}
      */
     private hasMark(type): boolean {
-        const { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
         return state.marks.some(mark => mark.type == type)
     }
 
     private getMarkData(type) {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
         let mark = state.marks.first(function (e) {
             return e.type == type
         });
@@ -884,8 +891,8 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    private hasBlock(type) {
-        const { state } = this.getMyself() ? this.getMyself().state : this.state;
+    private hasBlock(type): boolean {
+        let state = this.getActualState();
         return state.blocks.some(node => node.type == type)
     }
 
@@ -895,8 +902,8 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    private has(type) {
-        const { state } = this.getMyself() ? this.getMyself().state : this.state;
+    private has(type): boolean {
+        let state = this.getActualState();
         return state.blocks.some(node => node.type == type)
     }
 
@@ -906,8 +913,8 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    private isAligned(type) {
-        const { state } = this.getMyself() ? this.getMyself().state : this.state;
+    private isAligned(type): boolean {
+        let state = this.getActualState();
         return state.blocks.some(node => node.data.get("alignment") == type)
     }
 
@@ -917,12 +924,12 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      * @return {Boolean}
      */
-    private findInline(type): any {
-        const { state } = this.getMyself() ? this.getMyself().state : this.state;
+    private findInlineNode(type): any {
+        let state = this.getActualState();
         return state.inlines.find(node => node.type == type)
     }
 
-    private onSelectionChange(selection, state) {
+    private onSelectionChange(selection, state): void {
         this.getMyself().setState({ state });
         this.getMyself().state.state = state;
         this.getMyself().forceUpdate();
@@ -934,7 +941,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      *
      * @param {State} state
      */
-    public onChange(state) {
+    public onChange(state): void {
         this.setState({ state });
     }
 
@@ -986,16 +993,16 @@ export class SlateReactComponent extends React.Component<any, any> {
         let mark = state.marks.find((m) => {
             return "styled" == m.type
         });
+
         if (mark) {
             state = state.transform().removeMark("styled").apply();
             if (mark.data.get("style")) {
                 (style = Object.assign(mark.data.get("style"), style))
             }
         }
-        ;
-        var data = Data.create({
-            style: style
-        });
+
+        var data = Data.create({ style: style });
+
         state = state.transform().addMark({
             type: "styled",
             data: data
@@ -1018,8 +1025,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      */
     public onClickMark(type) {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
-
+        let state = this.getActualState();
         let expand = state.isExpanded;
         let { selection } = state;
 
@@ -1077,7 +1083,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      */
     public onClickInline(type) {
         switch (type) {
-            case 'link':
+            case "link":
                 this.onClickLink();
                 break;
             default:
@@ -1091,7 +1097,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      */
     public onClickAlign(alignment) {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
         let transform = state.transform();
         let newData = Data.create({ alignment: alignment });
 
@@ -1113,7 +1119,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {String} type
      */
     public onClickBlock(type: string) {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
         let transform = state.transform();
         const { document } = state;
 
@@ -1195,7 +1201,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         return transform
             .wrapInline({
-                type: 'link',
+                type: "link",
                 data: {
                     href: data.text
                 }
@@ -1205,7 +1211,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public onClickLink(): void {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
+        let state = this.getActualState();
 
         if (!state.isExpanded) {
             return;
@@ -1213,12 +1219,12 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         let { anchorOffset, focusOffset } = state.selection;
 
-        const hasLink = this.findInline('link');
+        const hasLink = this.findInlineNode("link");
 
         if (hasLink) {
             state = state
                 .transform()
-                .unwrapInline('link')
+                .unwrapInline("link")
                 .apply()
         }
 
@@ -1227,7 +1233,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         state = state
             .transform()
             .wrapInline({
-                type: 'link',
+                type: "link",
                 data: hrefData
             })
             .moveToOffsets(anchorOffset, focusOffset)
