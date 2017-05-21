@@ -769,6 +769,10 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public setSelection(selection): void {
+        if (!selection.anchorNode || !selection.focusNode) {
+            return;
+        }
+
         let newSelection = {
             anchorKey: selection.anchorNode.parentElement.parentElement.attributes.getNamedItem("data-key").value,
             anchorOffset: selection.anchorOffset,
