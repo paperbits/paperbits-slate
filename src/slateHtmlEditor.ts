@@ -6,7 +6,6 @@ import { IHtmlEditor, SelectionState, HtmlEditorEvents } from '@paperbits/common
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
     private slateReactComponent: SlateReactComponent;
-    private disabled: boolean = false;
 
     constructor(eventManager: IEventManager, intentions: any) {
         // initialization...
@@ -180,15 +179,11 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public enable(): void {
-        this.disabled = false;
         this.slateReactComponent.enable();
-        this.eventManager.addEventListener("onEscape", this.disable);
     }
 
     public disable(): void {
-        this.disabled = true;
         this.slateReactComponent.disable();
-        this.eventManager.removeEventListener("onEscape", this.disable);
     }
 
     public addSelectionChangeListener(callback: (htmlEditor: IHtmlEditor) => void): void {
@@ -201,22 +196,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
     public removeSelectionChangeListener(callback: () => void): void {
         this.slateReactComponent.removeSelectionChangeListener(callback);
-    }
-
-    public addDisabledListener(callback: () => void): void {
-        this.slateReactComponent.addDisabledListener(callback);
-    }
-
-    public removeDisabledListener(callback: () => void): void {
-        this.slateReactComponent.removeDisabledListener(callback);
-    }
-
-    public addEnabledListener(callback: () => void): void {
-        this.slateReactComponent.addEnabledListener(callback);
-    }
-
-    public removeEnabledListener(callback: () => void): void {
-        this.slateReactComponent.removeEnabledListener(callback);
     }
 
     public setInitialState(state: any): void {

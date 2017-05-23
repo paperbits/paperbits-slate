@@ -182,24 +182,25 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public addSelectionChangeListener(callback) {
-        let selectionChangeListeners = this.state.selectionChangeListeners;
+    public addSelectionChangeListener(callback): void {
+        // let selectionChangeListeners = this.state.selectionChangeListeners;
 
-        selectionChangeListeners.push(callback);
+        // selectionChangeListeners.push(callback);
 
-        this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
+        // this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
     }
 
     public removeSelectionChangeListener(callback): void {
-        let { selectionChangeListeners } = this.state;
-        for (let i = 0; i < selectionChangeListeners.length; i++) {
-            if (selectionChangeListeners[i] === callback) {
-                selectionChangeListeners.splice(i);
-                break;
-            }
-        }
-        this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
+        // let selectionChangeListeners = this.state.selectionChangeListeners;
+
+        // for (let i = 0; i < selectionChangeListeners.length; i++) {
+        //     if (selectionChangeListeners[i] === callback) {
+        //         selectionChangeListeners.splice(i);
+        //         break;
+        //     }
+        // }
+        // this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
     }
 
@@ -735,7 +736,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     public disable(): void {
         this.readOnly = true;
-        this.getMyself().forceUpdate();
+        this.clearSelection();
     }
 
     private getActualState(): State {
@@ -773,10 +774,17 @@ export class SlateReactComponent extends React.Component<any, any> {
             return;
         }
 
+        let anchorKey = selection.anchorNode.parentElement.parentElement.attributes.getNamedItem("data-key");
+        let focusKey = selection.focusNode.parentElement.parentElement.attributes.getNamedItem("data-key");
+
+        if (!anchorKey || !focusKey) {
+            return;
+        }
+
         let newSelection = {
-            anchorKey: selection.anchorNode.parentElement.parentElement.attributes.getNamedItem("data-key").value,
+            anchorKey: anchorKey.value,
             anchorOffset: selection.anchorOffset,
-            focusKey: selection.focusNode.parentElement.parentElement.attributes.getNamedItem("data-key").value,
+            focusKey: focusKey.value,
             focusOffset: selection.focusOffset,
             isFocused: true
         }
