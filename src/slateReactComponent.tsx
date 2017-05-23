@@ -183,24 +183,24 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public addSelectionChangeListener(callback): void {
-        // let selectionChangeListeners = this.state.selectionChangeListeners;
+        let selectionChangeListeners = this.state.selectionChangeListeners;
 
-        // selectionChangeListeners.push(callback);
+        selectionChangeListeners.push(callback);
 
-        // this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
+        this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
     }
 
     public removeSelectionChangeListener(callback): void {
-        // let selectionChangeListeners = this.state.selectionChangeListeners;
+        let selectionChangeListeners = this.state.selectionChangeListeners;
 
-        // for (let i = 0; i < selectionChangeListeners.length; i++) {
-        //     if (selectionChangeListeners[i] === callback) {
-        //         selectionChangeListeners.splice(i);
-        //         break;
-        //     }
-        // }
-        // this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
+        for (let i = 0; i < selectionChangeListeners.length; i++) {
+            if (selectionChangeListeners[i] === callback) {
+                selectionChangeListeners.splice(i);
+                break;
+            }
+        }
+        this.getMyself().setState({ selectionChangeListeners: selectionChangeListeners });
         this.getMyself().forceUpdate();
     }
 
