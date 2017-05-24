@@ -1,7 +1,9 @@
+import "es6-shim";
 import { SlateReactComponent } from "./slateReactComponent";
 import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from '@paperbits/common/editing/IHtmlEditor';
+
 
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
