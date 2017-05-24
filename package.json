@@ -19,11 +19,8 @@
     "gulp": "^3.9.1",
     "gulp-sourcemaps": "^2.6.0",
     "gulp-typescript": "^3.1.6",
-    "http-server": "^0.10.0",
     "merge2": "^1.0.3",
-    "tsify": "^3.0.1",
-    "typescript": "^2.3.2",
-    "vinyl-source-stream": "^1.1.0"
+    "typescript": "^2.3.2"
   },
   "scripts": {
     "start": "http-server ./src"

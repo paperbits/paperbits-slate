@@ -1,7 +1,6 @@
 var gulp = require("gulp");
 var typescript = require("typescript");
 var typescriptCompiler = require("gulp-typescript");
-var sourcemaps = require("gulp-sourcemaps");
 var merge = require("merge2");
 
 function handleError(error) {
@@ -20,9 +19,9 @@ gulp.task("typescript", function () {
         .src()
         .pipe(typescriptProject())
 
-    return merge([ // Merge the two output streams, so this task is finished when the IO of both operations is done. 
-        tsResult.dts.pipe(gulp.dest('./dist')),
-        tsResult.js.pipe(gulp.dest('./dist'))
+    return merge([
+        tsResult.dts.pipe(gulp.dest("./dist")),
+        tsResult.js.pipe(gulp.dest("./dist"))
     ]);
 });
 
