@@ -1278,6 +1278,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             onKeyDown={this.onKeyDown}
             onPaste={this.onPaste}
             readOnly={this.readOnly}
+            spellCheck={false}
             onSelectionChange={this.onSelectionChange}
         />;
 
