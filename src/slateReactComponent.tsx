@@ -463,11 +463,11 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     public toggleCategory(category, intentionFn, type): void {
         let state = this.getActualState();
-        let isExpanded = state.isExpanded
-        let selection = state.selection
-
+        let isExpanded = state.isExpanded;
+        let selection = state.selection;
         let nodes;
         let toggle;
+
         switch (type) {
             case 'block':
                 nodes = state.blocks;

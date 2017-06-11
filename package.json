@@ -4,23 +4,22 @@
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {
-    "@paperbits/common": "0.1.0",
     "es6-shim": "^0.35.3",
     "immutable": "^3.8.1",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
     "react-frame-aware-selection-plugin": "^1.0.0",
-    "slate": "^0.20.1"
+    "slate": "^0.20.3"
   },
   "devDependencies": {
-    "@types/es6-shim": "^0.31.33",
+    "@types/es6-shim": "^0.31.34",
     "@types/immutable": "^3.8.7",
-    "@types/react": "^15.0.24",
+    "@types/react": "^15.0.27",
     "gulp": "^3.9.1",
     "gulp-sourcemaps": "^2.6.0",
-    "gulp-typescript": "^3.1.6",
+    "gulp-typescript": "^3.1.7",
     "merge2": "^1.0.3",
-    "typescript": "^2.3.3"
+    "typescript": "^2.3.4"
   },
   "scripts": {
     "start": "http-server ./src"
