@@ -1,29 +1,36 @@
 {
-  "name": "@paperbits/slate",
-  "version": "0.0.1",
-  "description": "",
-  "main": "gulpfile.js",
-  "dependencies": {
-    "es6-shim": "^0.35.3",
-    "immutable": "^3.8.1",
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4",
-    "react-frame-aware-selection-plugin": "^1.0.0",
-    "slate": "^0.20.3"
-  },
-  "devDependencies": {
-    "@types/es6-shim": "^0.31.34",
-    "@types/immutable": "^3.8.7",
-    "@types/react": "^15.0.27",
-    "gulp": "^3.9.1",
-    "gulp-sourcemaps": "^2.6.0",
-    "gulp-typescript": "^3.1.7",
-    "merge2": "^1.0.3",
-    "typescript": "^2.3.4"
-  },
-  "scripts": {
-    "start": "http-server ./src"
-  },
-  "author": "",
-  "license": "ISC"
+    "name": "@paperbits/slate",
+    "version": "0.0.3",
+    "description": "Paperbits HTML editor based on Slate.",
+    "author": "Vienna LLC",
+    "license": "GPL-3.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/paperbits/paperbits-slate.git"
+    },
+    "keywords": [
+        "paperbits",
+        "slate"
+    ],
+    "bugs": {
+        "url": "https://github.com/paperbits/paperbits-slate/issues"
+    },
+    "dependencies": {
+        "es6-shim": "^0.35.3",
+        "immutable": "^3.8.1",
+        "react": "^15.5.4",
+        "react-dom": "^15.5.4",
+        "react-frame-aware-selection-plugin": "^1.0.0",
+        "slate": "^0.20.3"
+    },
+    "devDependencies": {
+        "@types/es6-shim": "^0.31.34",
+        "@types/immutable": "^3.8.7",
+        "@types/react": "^15.0.27",
+        "gulp": "^3.9.1",
+        "gulp-sourcemaps": "^2.6.0",
+        "gulp-typescript": "^3.1.7",
+        "merge2": "^1.0.3",
+        "typescript": "^2.3.4"
+    }
 }
