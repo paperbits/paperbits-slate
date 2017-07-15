@@ -1,4 +1,5 @@
 import "es6-shim";
+import { IntentionMapService } from "./intentionMapService";
 import { SlateReactComponent } from "./slateReactComponent";
 import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
@@ -9,9 +10,11 @@ export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
     private slateReactComponent: SlateReactComponent;
 
-    constructor(eventManager: IEventManager, intentions: any) {
+    constructor(eventManager: IEventManager, intentionMapService: IntentionMapService) {
         // initialization...
         this.eventManager = eventManager;
+
+        let intentions = <any>intentionMapService.getMap();
 
         let intentionsMap = {};
 
