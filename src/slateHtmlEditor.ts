@@ -15,7 +15,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.eventManager = eventManager;
 
         let intentions = <any>intentionMapService.getMap();
-
         let intentionsMap = {};
 
         Object.keys(intentions.text.style).forEach(key => {
@@ -44,7 +43,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.removeHyperlink = this.removeHyperlink.bind(this);
         this.disable = this.disable.bind(this);
         this.renderToContainer = this.renderToContainer.bind(this);
-        this.setInitialState = this.setInitialState.bind(this);
 
         this.slateReactComponent = new SlateReactComponent(intentionsMap);
     }
@@ -62,8 +60,9 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
     public getSelectionState(): SelectionState {
         let state = this.slateReactComponent.getSelectionState();
-        state.normal = !state.h1 && !state.h2 && !state.h3 && !state.h4 &&
-            !state.h5 && !state.h6 && !state.code && !state.quote;
+
+        state.normal = !state.h1 && !state.h2 && !state.h3 && !state.h4 && !state.h5 && !state.h6 && !state.code && !state.quote;
+
         return state;
     }
 
@@ -168,16 +167,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
-    public setIntention(intentionFn: string, type: string): void {
-        this.slateReactComponent.setIntention(intentionFn, type);
-        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
-    }
-
-    public resetIntention(intentionFn: string, type: string): void {
-        this.slateReactComponent.resetIntention(intentionFn, type);
-        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
-    }
-
     public resetToNormal(): void {
         this.slateReactComponent.resetToNormal();
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
@@ -201,10 +190,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
     public removeSelectionChangeListener(callback: () => void): void {
         this.slateReactComponent.removeSelectionChangeListener(callback);
-    }
-
-    public setInitialState(state: any): void {
-        this.slateReactComponent.setInitialState(state);
     }
 
     public setSelection(selection: Selection): void {
