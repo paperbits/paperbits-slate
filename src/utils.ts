@@ -8,7 +8,7 @@ export class Utils {
         }
     }
 
-    public static createReactElement(tagName: string, properties: any) {
+    public static createReactElement(tagName: string, properties: any): JSX.Element {
         const data = properties.mark ? properties.mark.data : properties.node.data;
         const categories = data.get("categories");
 
@@ -16,16 +16,28 @@ export class Utils {
             return React.createElement(tagName, properties.attributes, properties.children);
         }
 
-        const intentions: any = List(Object.keys(categories).map(k => categories[k]));
+        const attributes = properties.attributes || {};
 
-        const className = intentions
-            .update((collection) => collection.reduce((cn, fn) => cn + " " + Utils.Configuration.IntentionsMap[fn](), ""))
-            .trim();
+        const classNameCategoryKeys = Object.keys(categories).filter(x => x !== "anchorKey");
 
-        const attr = properties.attributes || {};
-        Object.assign(attr, { className: className });
+        if (classNameCategoryKeys.length > 0) {
+            const className = classNameCategoryKeys
+                .map(category => categories[category])
+                .map(intentionKey => Utils.Configuration.IntentionsMap[intentionKey]())
+                .join(" ");
 
-        return properties.children ? React.createElement(tagName, attr, properties.children) : React.createElement(tagName, attr);
+            Object.assign(attributes, { className: className });
+        }
+
+        const anchorCategoryKey = Object.keys(categories).find(x => x === "anchorKey");
+
+        if (anchorCategoryKey) {
+            const id = categories[anchorCategoryKey];
+
+            Object.assign(attributes, { id: id });
+        }
+
+        return properties.children ? React.createElement(tagName, attributes, properties.children) : React.createElement(tagName, attributes);
     }
 
     public static createLinkElement() {

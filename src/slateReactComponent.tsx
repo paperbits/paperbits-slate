@@ -465,13 +465,13 @@ export class SlateReactComponent extends React.Component<any, any> {
 
                 let newData = this.createOrUpdateCategory(data, category, intentionFn);
 
-                state = this.updateCustomMark(state, data, newData, category, intentionFn, mark)
+                state = this.updateCustomMark(state, data, newData, mark);
             })
         }
         else {
             const newData = this.createOrUpdateCategory(null, category, intentionFn);
 
-            state = this.updateCustomMark(state, data, newData, category, intentionFn)
+            state = this.updateCustomMark(state, data, newData);
         }
         return state;
     }
@@ -535,7 +535,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         return data.set("categories", categories)
     }
 
-    private updateCustomMark(state, data, newData, category, intentionFn, mark?): any {
+    private updateCustomMark(state, data, newData, mark?): any {
         if (mark) {
             state = state
                 .transform()
