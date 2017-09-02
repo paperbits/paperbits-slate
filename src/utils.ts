@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Set, Seq, Collection, List, Map } from "immutable";
 
 export class Utils {
     public static createElement(tagName) {
@@ -50,14 +49,14 @@ export class Utils {
     }
 
     public static createLinkElement() {
-        return props => {
-            const { data } = props.node;
+        return properties => {
+            const { data } = properties.node;
             const href = data.get("href");
             const target = data.get("target");
 
-            Object.assign(props.attributes, { href: href, target: target });
+            Object.assign(properties.attributes, { href: href, target: target });
 
-            return Utils.createReactElement("a", props);
+            return Utils.createReactElement("a", properties);
         }
     }
 
