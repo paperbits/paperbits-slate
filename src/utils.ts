@@ -23,7 +23,16 @@ export class Utils {
         if (classNameCategoryKeys.length > 0) {
             const className = classNameCategoryKeys
                 .map(category => categories[category])
-                .map(intentionKey => Utils.Configuration.IntentionsMap[intentionKey]())
+                .map(intentionKey => {
+                    const intentionFunc = Utils.Configuration.IntentionsMap[intentionKey];
+
+                    if (!intentionFunc) {
+                        console.warn(`Could not find intention with key ${intentionKey}`);
+                        return "";
+                    }
+
+                    return intentionFunc();
+                })
                 .join(" ");
 
             Object.assign(attributes, { className: className });
