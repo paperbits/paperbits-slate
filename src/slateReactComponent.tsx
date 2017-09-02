@@ -535,26 +535,19 @@ export class SlateReactComponent extends React.Component<any, any> {
         return data.set("categories", categories)
     }
 
-    private updateCustomMark(state, data, newData, category, intentionFn, mark?) {
+    private updateCustomMark(state, data, newData, category, intentionFn, mark?): any {
         if (mark) {
-            // if (!intentionFn &&
-            //     (mark.type == "custom" &&
-            //         mark.data &&
-            //         mark.data.get("categories") &&
-            //         mark.data.get("categories").length == 1 &&
-            //         mark.data.get("categories")[category] == intentionFn)) {
-            //     state = state.transform()
-            //         .removeMarkAtRange(state.selection, { type: "custom", data: data }).apply();
-            // }
-            // else 
-            {
-                state = state.transform()
-                    .removeMarkAtRange(state.selection, { type: "custom", data: data })
-                    .toggleMarkAtRange(state.selection, { type: "custom", data: newData }).apply();
-            }
+            state = state
+                .transform()
+                .removeMarkAtRange(state.selection, { type: "custom", data: data })
+                .toggleMarkAtRange(state.selection, { type: "custom", data: newData })
+                .apply();
         }
         else {
-            state = state.transform().toggleMarkAtRange(state.selection, { type: "custom", data: newData }).apply();
+            state = state
+                .transform()
+                .toggleMarkAtRange(state.selection, { type: "custom", data: newData })
+                .apply();
         }
         return state;
     }

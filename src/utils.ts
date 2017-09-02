@@ -16,16 +16,14 @@ export class Utils {
             return React.createElement(tagName, properties.attributes, properties.children);
         }
 
-        const intentions: any = List(Object.keys(categories).map(k => categories[k]))
+        const intentions: any = List(Object.keys(categories).map(k => categories[k]));
 
         const className = intentions
-            .update((collection) => {
-                return collection.reduce((cn, fn) => cn + " " + Utils.Configuration.IntentionsMap[fn](), "")
-            })
+            .update((collection) => collection.reduce((cn, fn) => cn + " " + Utils.Configuration.IntentionsMap[fn](), ""))
             .trim();
 
         const attr = properties.attributes || {};
-        Object.assign(attr, { className: className })
+        Object.assign(attr, { className: className });
 
         return properties.children ? React.createElement(tagName, attr, properties.children) : React.createElement(tagName, attr);
     }
