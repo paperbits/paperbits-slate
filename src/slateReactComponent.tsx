@@ -7,6 +7,7 @@ import { initialState } from "./state";
 import { Utils } from "./utils";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { SelectionState } from "@paperbits/common/editing/IHtmlEditor";
+import { IBag } from "@paperbits/common/core/IBag";
 
 injector();
 
@@ -283,65 +284,19 @@ export class SlateReactComponent extends React.Component<any, any> {
         return result;
     }
 
-    public getIntentions() {
-        const result = {
-            block: null,
-            inline: null
-        }
-
+    private getIntentions(): IBag<string> {
+        const result = {};
         const state = this.getActualState();
-        const { blocks } = state;
 
-        let blockIntentions;
-
-        blocks.forEach(block => {
+        state.blocks.forEach(block => {
             const categories = block.data.get("categories");
+            Object.assign(result, categories);
+        });
 
-            if (!categories) {
-                return;
-            }
-
-            const intentions = Seq(categories).map(v => v);
-
-            if (!intentions) {
-                return;
-            }
-
-            if (!blockIntentions) {
-                blockIntentions = intentions;
-            }
-            else {
-                blockIntentions = Set(blockIntentions).intersect(intentions).toArray();
-            }
-        })
-
-        result.block = blockIntentions;
-
-        const { marks } = state;
-        let inlineIntentions;
-
-        marks.forEach(mark => {
+        state.marks.forEach(mark => {
             const categories = mark.data.get("categories");
-
-            if (!categories) {
-                return;
-            }
-
-            const intentions = Seq(categories).map(v => v)
-
-            if (!intentions) {
-                return;
-            }
-
-            if (!inlineIntentions) {
-                inlineIntentions = intentions
-            }
-            else {
-                inlineIntentions = Set(inlineIntentions).intersect(intentions).toArray()
-            }
+            Object.assign(result, categories);
         })
-
-        result.inline = inlineIntentions;
 
         return result;
     }
