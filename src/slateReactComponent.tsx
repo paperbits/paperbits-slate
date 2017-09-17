@@ -285,8 +285,8 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     public getIntentions() {
         const result = {
-            block: [],
-            inline: []
+            block: null,
+            inline: null
         }
 
         const state = this.getActualState();
@@ -315,7 +315,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             }
         })
 
-        result.block = blockIntentions && blockIntentions || [];
+        result.block = blockIntentions;
 
         const { marks } = state;
         let inlineIntentions;
@@ -341,7 +341,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             }
         })
 
-        result.inline = inlineIntentions && inlineIntentions || [];
+        result.inline = inlineIntentions;
 
         return result;
     }
@@ -649,6 +649,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         state = state.transform().blur().apply();
 
         this.applyState(state);
+    }
+
+    public getSelectionText(): string {
+        const state = this.getActualState();
+        return state.texts._tail.array.map(x => x.text).join("");
     }
 
     public expandSelection(): void {
