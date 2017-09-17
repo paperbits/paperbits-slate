@@ -4,7 +4,6 @@ import * as injector from "react-frame-aware-selection-plugin";
 import { Editor, Mark, Raw, Data, State } from "slate"
 import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
-import { Utils } from "./utils";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { SelectionState } from "@paperbits/common/editing/IHtmlEditor";
 import { IBag } from "@paperbits/common/core/IBag";
@@ -12,9 +11,10 @@ import { IBag } from "@paperbits/common/core/IBag";
 injector();
 
 export class SlateReactComponent extends React.Component<any, any> {
-    static dirtyHack;
-    static DEFAULT_NODE = "paragraph";
-    static DEFAULT_ALIGNMENT = "align-left";
+    private static dirtyHack;
+    private static DEFAULT_NODE = "paragraph";
+    private static DEFAULT_ALIGNMENT = "align-left";
+    private static intentionsMap = {};
 
     private readOnly = true;
 
@@ -34,7 +34,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     constructor(intentionsMap: Object) {
         super();
 
-        Object.assign(Utils.Configuration.IntentionsMap, intentionsMap);
+        Object.assign(SlateReactComponent.intentionsMap, intentionsMap);
 
         this.getMyself = this.getMyself.bind(this);
         this.renderToContainer = this.renderToContainer.bind(this);
@@ -88,16 +88,13 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.onSelectionChange = this.onSelectionChange.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
-        this.onClickStyled = this.onClickStyled.bind(this);
-        this.onClickMark = this.onClickMark.bind(this);
-        this.onClickRemoveMark = this.onClickRemoveMark.bind(this);
-        this.onClickInline = this.onClickInline.bind(this);
-        this.onClickAlign = this.onClickAlign.bind(this);
+        this.toggleMark = this.toggleMark.bind(this);
         this.toggleBlock = this.toggleBlock.bind(this);
         this.onPaste = this.onPaste.bind(this);
         this.onClickLink = this.onClickLink.bind(this);
         this.render = this.render.bind(this);
         this.renderEditor = this.renderEditor.bind(this);
+        this.createReactElementInternal = this.createReactElementInternal.bind(this);
 
         if (SlateReactComponent.dirtyHack) {
             let getMyself = SlateReactComponent.dirtyHack;
@@ -270,20 +267,6 @@ export class SlateReactComponent extends React.Component<any, any> {
         return state;
     }
 
-    public getCategoriesForSelection(): Object[] {
-        const state = this.getActualState();
-        const { blocks } = state;
-
-        const result = [];
-
-        blocks.forEach(block => {
-            const categories = block.data.get("categories");
-            result.push(categories);
-        });
-
-        return result;
-    }
-
     private getIntentions(): IBag<string> {
         const result = {};
         const state = this.getActualState();
@@ -302,17 +285,17 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public toggleBold(): void {
-        this.onClickMark("bold");
+        this.toggleMark("bold");
         this.getMyself().forceUpdate();
     }
 
     public toggleItalic(): void {
-        this.onClickMark("italic");
+        this.toggleMark("italic");
         this.getMyself().forceUpdate();
     }
 
     public toggleUnderlined(): void {
-        this.onClickMark("underlined");
+        this.toggleMark("underlined");
         this.getMyself().forceUpdate();
     }
 
@@ -366,14 +349,12 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-
-
-    public toggleCategory(category, intentionFn, type): void {
-        let state = this.getActualState();
-        let isExpanded = state.isExpanded;
-        let selection = state.selection;
+    public toggleCategory(category: string, intentionFn: string, type: string): void {
         let nodes;
         let toggle;
+        let state = this.getActualState();
+        const expand = state.isExpanded;
+        const selection = state.selection;
 
         switch (type) {
             case "block":
@@ -390,42 +371,47 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         nodes.forEach(function (node) {
             state = state.transform().moveToRangeOf(node).apply();
-            if (state.selection.startKey == selection.startKey && state.selection.startOffset < selection.startOffset ||
-                state.selection.endKey == selection.endKey && state.selection.endOffset > selection.endOffset) {
-                let newSelection = {
+
+            if (state.selection.startKey == selection.startKey &&
+                state.selection.startOffset < selection.startOffset ||
+                state.selection.endKey == selection.endKey &&
+                state.selection.endOffset > selection.endOffset) {
+
+                const newSelection = {
                     anchorKey: state.selection.startKey,
                     anchorOffset: state.selection.startOffset,
                     focusKey: state.selection.endKey,
                     focusOffset: state.selection.endOffset
                 }
+
                 if (state.selection.startKey == selection.startKey && state.selection.startOffset < selection.startOffset) {
                     newSelection.anchorKey = selection.startKey
                     newSelection.anchorOffset = selection.startOffset
                 }
+
                 if (state.selection.endKey == selection.endKey && state.selection.endOffset > selection.endOffset) {
                     newSelection.focusKey = selection.endKey
                     newSelection.focusOffset = selection.endOffset
                 }
+
                 state = state.transform().select(newSelection).apply();
             }
             state = toggle(state, node, category, intentionFn, type);
         }, this);
 
-
-        if (isExpanded) {
-            state = state.transform().select(selection).focus().apply()
+        if (expand) {
+            state = state
+                .transform()
+                .select(selection)
+                .focus()
+                .apply();
         }
 
-        this.getMyself() ? this.getMyself().setState({
-            state: state
-        }) : this.setState({
-            state: state
-        })
-
+        this.getMyself() ? this.getMyself().setState({ state: state }) : this.setState({ state: state });
         this.getMyself().forceUpdate();
     }
 
-    public toggleInlineCategory(state, node, category, intentionFn, type) {
+    public toggleInlineCategory(state, node, category: string, intentionFn: string) {
         let data;
 
         if (state.marks.some(m => m.type == "custom")) {
@@ -447,16 +433,15 @@ export class SlateReactComponent extends React.Component<any, any> {
         return state;
     }
 
-    public toggleBlockCategory(state, node, category, intentionFn, type) {
+    public toggleBlockCategory(state, node, category: string, intentionFn: string) {
         let { data } = node;
         let newData = this.createOrUpdateCategory(data, category, intentionFn);
 
         return this.updateCustomBlock(state, data, newData);
     }
 
-    public createOrUpdateCategory(data, category, intentionFn) {
+    public createOrUpdateCategory(data, category: string, intentionFn: string) {
         if (!data) {
-
             if (!intentionFn) {
                 return null;
             }
@@ -464,15 +449,12 @@ export class SlateReactComponent extends React.Component<any, any> {
             let categories = {};
             categories[category] = intentionFn
 
-            return Data.create({
-                categories: categories
-            })
+            return Data.create({ categories: categories });
         }
 
         let categories = data.get("categories");
 
         if (!categories) {
-
             if (!intentionFn) {
                 return data;
             }
@@ -482,7 +464,6 @@ export class SlateReactComponent extends React.Component<any, any> {
 
             return data.set("categories", categories)
         }
-
 
         if (!categories[category]) {
             if (!intentionFn) {
@@ -503,7 +484,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         categories = JSON.parse(JSON.stringify(categories))
         categories[category] = intentionFn
 
-        return data.set("categories", categories)
+        return data.set("categories", categories);
     }
 
     private updateCustomMark(state, data, newData, mark?): any {
@@ -854,48 +835,10 @@ export class SlateReactComponent extends React.Component<any, any> {
         return state;
     }
 
-    private onClickStyled(style) {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state
-        let isExpanded = state.isExpanded
-        let selection = state.selection
-        let mark = state.marks.find((m) => {
-            return "styled" == m.type
-        });
-
-        if (mark) {
-            state = state.transform().removeMark("styled").apply();
-            if (mark.data.get("style")) {
-                (style = Object.assign(mark.data.get("style"), style))
-            }
-        }
-
-        var data = Data.create({ style: style });
-
-        state = state.transform().addMark({
-            type: "styled",
-            data: data
-        }).apply();
-
-        if (isExpanded) {
-            state = state.transform().select(selection).apply()
-        }
-
-        this.getMyself() ? this.getMyself().setState({
-            state: state
-        }) : this.setState({
-            state: state
-        })
-    }
-
-    /**
-     * When a mark button is clicked, toggle the current mark.
-     *
-     * @param {String} type
-     */
-    public onClickMark(type) {
+    public toggleMark(type: string): void {
         let state = this.getActualState();
-        let expand = state.isExpanded;
-        let { selection } = state;
+        const expand = state.isExpanded;
+        const selection = state.selection
 
         state = state
             .transform()
@@ -917,78 +860,10 @@ export class SlateReactComponent extends React.Component<any, any> {
         }
     }
 
-    public onClickRemoveMark(type) {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state
-        let isExpanded = state.isExpanded;
-        let selection = state.selection;
-        let mark = state.marks.find(function (e) { return e.type == type })
-
-        for (; mark;) {
-            state = state.transform().removeMark(mark).apply();
-
-            if (isExpanded) {
-                state = state.transform().select(selection).apply()
-            }
-
-            this.getMyself() ?
-                this.getMyself().setState({
-                    state: state
-                }) :
-                this.setState({
-                    state: state
-                });
-
-            mark = state.marks.find(function (m) {
-                return m.type == type
-            })
-        }
-    }
-
-    /**
-     * When a inline button is clicked, toggle the inline type.
-     *
-     * @param {String} type
-     */
-    public onClickInline(type) {
-        switch (type) {
-            case "link":
-                this.onClickLink();
-                break;
-            default:
-                throw new Error("undefined inline type: " + type);
-        }
-    }
-
-    /**
-     * When a align button is clicked, toggle the align type.
-     *
-     * @param {String} type
-     */
-    public onClickAlign(alignment) {
+    private toggleBlock(type: string): void {
         let state = this.getActualState();
         let transform = state.transform();
-        let newData = Data.create({ alignment: alignment });
 
-        state = transform.setBlock({
-            data: newData
-        }).apply();
-
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
-    }
-
-    /**
-     * When a block button is clicked, toggle the block type.
-     *
-     * @param {String} type
-     */
-    private toggleBlock(type: string) {
-        let state = this.getActualState();
-        let transform = state.transform();
         const { document } = state;
 
         // Handle everything but list buttons.
@@ -998,18 +873,13 @@ export class SlateReactComponent extends React.Component<any, any> {
 
             if (isList) {
                 transform = transform
-                    .setBlock({
-                        type: isActive ? SlateReactComponent.DEFAULT_NODE : type
-                    })
+                    .setBlock({ type: isActive ? SlateReactComponent.DEFAULT_NODE : type })
                     .unwrapBlock("bulleted-list")
                     .unwrapBlock("numbered-list")
             }
-
             else {
                 transform = transform
-                    .setBlock({
-                        type: isActive ? SlateReactComponent.DEFAULT_NODE : type
-                    })
+                    .setBlock({ type: isActive ? SlateReactComponent.DEFAULT_NODE : type })
             }
         }
 
@@ -1022,20 +892,18 @@ export class SlateReactComponent extends React.Component<any, any> {
 
             if (isList && isType) {
                 transform = transform
-                    .setBlock({
-                        type: SlateReactComponent.DEFAULT_NODE
-                    })
+                    .setBlock({ type: SlateReactComponent.DEFAULT_NODE })
                     .unwrapBlock("bulleted-list")
                     .unwrapBlock("numbered-list")
-            } else if (isList) {
+            }
+            else if (isList) {
                 transform = transform
                     .unwrapBlock(type == "bulleted-list" ? "numbered-list" : "bulleted-list")
                     .wrapBlock(type)
-            } else {
+            }
+            else {
                 transform = transform
-                    .setBlock({
-                        type: "list-item"
-                    })
+                    .setBlock({ type: "list-item" })
                     .wrapBlock(type)
             }
         }
@@ -1130,7 +998,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         let editor = <Editor
             placeholder={"Enter some rich text..."}
             state={this.state.state}
-            schema={Utils.Configuration.Schema}
+            schema={this.Configuration.Schema}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
             onPaste={this.onPaste}
@@ -1140,5 +1008,104 @@ export class SlateReactComponent extends React.Component<any, any> {
         />;
 
         return editor
+    }
+
+
+
+
+
+
+
+
+
+
+
+    private createReactElement(tagName) {
+        return properties => {
+            return this.createReactElementInternal(tagName, properties);
+        }
+    }
+
+    private createReactElementInternal(tagName: string, properties: any): JSX.Element {
+        const data = properties.mark ? properties.mark.data : properties.node.data;
+        const categories = data.get("categories");
+
+        if (!categories) {
+            return React.createElement(tagName, properties.attributes, properties.children);
+        }
+
+        const attributes = properties.attributes || {};
+
+        // TODO: Make universal!!!
+        const classNameCategoryKeys = Object.keys(categories).filter(x => x !== "anchorKey" && x !== "anchorId");
+
+        if (classNameCategoryKeys.length > 0) {
+            const className = classNameCategoryKeys
+                .map(category => categories[category])
+                .map(intentionKey => {
+                    const intentionFunc = SlateReactComponent.intentionsMap[intentionKey];
+
+                    if (!intentionFunc) {
+                        console.warn(`Could not find intention with key ${intentionKey}`);
+                        return "";
+                    }
+
+                    return intentionFunc();
+                })
+                .join(" ");
+
+            Object.assign(attributes, { className: className });
+        }
+
+        // TODO: Switch to node.data
+        const anchorCategoryKey = Object.keys(categories).find(x => x === "anchorId");
+
+        if (anchorCategoryKey) {
+            const id = categories[anchorCategoryKey];
+
+            Object.assign(attributes, { id: id });
+        }
+
+        return properties.children ? React.createElement(tagName, attributes, properties.children) : React.createElement(tagName, attributes);
+    }
+
+    private createLinkElement() {
+        return properties => {
+            const { data } = properties.node;
+            const href = data.get("href");
+            const target = data.get("target");
+
+            Object.assign(properties.attributes, { href: href, target: target });
+
+            return this.createReactElementInternal("a", properties);
+        }
+    }
+
+    private Configuration = {
+        IntentionsMap: {},
+        Schema: {
+            nodes: {
+                "block-quote": this.createReactElement("blockquote"),
+                "bulleted-list": this.createReactElement("ul"),
+                "heading-one": this.createReactElement("h1"),
+                "heading-two": this.createReactElement("h2"),
+                "heading-three": this.createReactElement("h3"),
+                "heading-four": this.createReactElement("h4"),
+                "heading-five": this.createReactElement("h5"),
+                "heading-six": this.createReactElement("h6"),
+                "list-item": this.createReactElement("li"),
+                "numbered-list": this.createReactElement("ol"),
+                "link": this.createLinkElement(),
+                "code": this.createReactElement("pre"),
+                "paragraph": this.createReactElement("p"),
+                "custom": this.createReactElement("div")
+            },
+            marks: {
+                bold: this.createReactElement("b"),
+                italic: this.createReactElement("i"),
+                underlined: this.createReactElement("u"),
+                custom: this.createReactElement("span")
+            }
+        }
     }
 }

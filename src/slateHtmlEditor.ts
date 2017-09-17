@@ -3,11 +3,13 @@ import { IntentionMapService } from "./intentionMapService";
 import { SlateReactComponent } from "./slateReactComponent";
 import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
+import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing/IHtmlEditor";
 
 
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
+    private readonly permalinkService: IPermalinkService;
     private slateReactComponent: SlateReactComponent;
 
     constructor(eventManager: IEventManager, intentionMapService: IntentionMapService) {
@@ -165,10 +167,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
     public toggleCategory(category: string, intentionFn: string, type: string): void {
         this.slateReactComponent.toggleCategory(category, intentionFn, type);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
-    }
-
-    public getCategories(): Object[] {
-        return this.slateReactComponent.getCategoriesForSelection();
     }
 
     public resetToNormal(): void {
