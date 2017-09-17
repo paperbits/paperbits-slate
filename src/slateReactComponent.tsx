@@ -92,7 +92,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.onClickRemoveMark = this.onClickRemoveMark.bind(this);
         this.onClickInline = this.onClickInline.bind(this);
         this.onClickAlign = this.onClickAlign.bind(this);
-        this.onClickBlock = this.onClickBlock.bind(this);
+        this.toggleBlock = this.toggleBlock.bind(this);
         this.onPaste = this.onPaste.bind(this);
         this.onClickLink = this.onClickLink.bind(this);
         this.render = this.render.bind(this);
@@ -122,23 +122,23 @@ export class SlateReactComponent extends React.Component<any, any> {
         return this.me;
     }
 
-    public updateState(newState): void {
-        let state = Raw.deserialize(newState, { terse: true });
-        this.getMyself().setState({ state })
-    }
-
     public applyState(state): void {
         if (this.getMyself()) {
             this.getMyself().setState({ state });
         }
         else {
-            this.setState({ state })
+            this.setState({ state });
         }
         this.getMyself().forceUpdate();
     }
 
-    public getState() {
+    public getState(): Object {
         return Raw.serialize(this.getMyself().state.state, { terse: true });
+    }
+
+    public updateState(newState: Object): void {
+        let state = Raw.deserialize(newState, { terse: true });
+        this.getMyself().setState({ state })
     }
 
     public getSelectionPosition() {
@@ -269,6 +269,20 @@ export class SlateReactComponent extends React.Component<any, any> {
         return state;
     }
 
+    public getCategoriesForSelection(): Object[] {
+        const state = this.getActualState();
+        const { blocks } = state;
+
+        const result = [];
+
+        blocks.forEach(block => {
+            const categories = block.data.get("categories");
+            result.push(categories);
+        });
+
+        return result;
+    }
+
     public getIntentions() {
         const result = {
             block: [],
@@ -348,54 +362,56 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public toggleUl(): void {
-        this.onClickBlock("bulleted-list");
+        this.toggleBlock("bulleted-list");
         this.getMyself().forceUpdate();
     }
 
     public toggleOl(): void {
-        this.onClickBlock("numbered-list");
+        this.toggleBlock("numbered-list");
         this.getMyself().forceUpdate();
     }
 
     public toggleH1(): void {
-        this.onClickBlock("heading-one");
+        this.toggleBlock("heading-one");
         this.getMyself().forceUpdate();
     }
 
     public toggleH2(): void {
-        this.onClickBlock("heading-two");
+        this.toggleBlock("heading-two");
         this.getMyself().forceUpdate();
     }
 
     public toggleH3(): void {
-        this.onClickBlock("heading-three");
+        this.toggleBlock("heading-three");
         this.getMyself().forceUpdate();
     }
 
     public toggleH4(): void {
-        this.onClickBlock("heading-four");
+        this.toggleBlock("heading-four");
         this.getMyself().forceUpdate();
     }
 
     public toggleH5(): void {
-        this.onClickBlock("heading-five");
+        this.toggleBlock("heading-five");
         this.getMyself().forceUpdate();
     }
 
     public toggleH6(): void {
-        this.onClickBlock("heading-six");
+        this.toggleBlock("heading-six");
         this.getMyself().forceUpdate();
     }
 
     public toggleQuote(): void {
-        this.onClickBlock("block-quote");
+        this.toggleBlock("block-quote");
         this.getMyself().forceUpdate();
     }
 
     public toggleCode(): void {
-        this.onClickBlock("code");
+        this.toggleBlock("code");
         this.getMyself().forceUpdate();
     }
+
+
 
     public toggleCategory(category, intentionFn, type): void {
         let state = this.getActualState();
@@ -1010,7 +1026,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      *
      * @param {String} type
      */
-    public onClickBlock(type: string) {
+    private toggleBlock(type: string) {
         let state = this.getActualState();
         let transform = state.transform();
         const { document } = state;
@@ -1019,6 +1035,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         if (type != "bulleted-list" && type != "numbered-list") {
             const isActive = this.hasBlock(type);
             const isList = this.hasBlock("list-item");
+
             if (isList) {
                 transform = transform
                     .setBlock({
@@ -1064,6 +1081,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         }
 
         state = transform.apply();
+
         if (this.getMyself()) {
             this.getMyself().setState({ state });
         }

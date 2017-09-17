@@ -66,12 +66,12 @@ export class SlateHtmlEditor implements IHtmlEditor {
         return state;
     }
 
-    public getState(): any {
+    public getState(): Object {
         let state = this.slateReactComponent.getState();
         return state;
     }
 
-    public updateState(state: any): void {
+    public setState(state: Object): void {
         this.slateReactComponent.updateState(state);
     }
 
@@ -165,6 +165,10 @@ export class SlateHtmlEditor implements IHtmlEditor {
     public toggleCategory(category: string, intentionFn: string, type: string): void {
         this.slateReactComponent.toggleCategory(category, intentionFn, type);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
+    }
+
+    public getCategories(): Object[] {
+        return this.slateReactComponent.getCategoriesForSelection();
     }
 
     public resetToNormal(): void {
