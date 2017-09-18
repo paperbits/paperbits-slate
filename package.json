@@ -1,6 +1,6 @@
 {
     "name": "@paperbits/slate",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "Paperbits HTML editor based on Slate.",
     "author": "Vienna LLC",
     "license": "GPL-3.0",
@@ -22,16 +22,16 @@
         "react": "^15.6.1",
         "react-dom": "^15.6.1",
         "react-frame-aware-selection-plugin": "^1.0.0",
-        "slate": "^0.24.1"
+        "slate": "^0.20.6"
     },
     "devDependencies": {
-        "@types/es6-shim": "^0.31.35",
+        "@types/es6-shim": "^0.31.34",
         "@types/immutable": "^3.8.7",
-        "@types/react": "^16.0.5",
+        "@types/react": "^15.0.38",
         "gulp": "^3.9.1",
-        "gulp-sourcemaps": "^2.6.1",
-        "gulp-typescript": "^3.2.2",
-        "merge2": "^1.2.0",
-        "typescript": "^2.5.2"
+        "gulp-sourcemaps": "^2.6.0",
+        "gulp-typescript": "^3.2.1",
+        "merge2": "^1.1.0",
+        "typescript": "^2.4.1"
     }
 }
