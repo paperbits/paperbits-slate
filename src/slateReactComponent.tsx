@@ -918,36 +918,6 @@ export class SlateReactComponent extends React.Component<any, any> {
         }
     }
 
-    /**
-     * On paste, if the text is a link, wrap the selection in a link.
-     *
-     * @param {Event} e
-     * @param {Object} data
-     * @param {State} state
-     */
-    public onPaste(e, data, state) {
-        if (state.isCollapsed) {
-            return;
-        }
-
-        if (data.type != "text" && data.type != "html") {
-            return;
-        }
-
-        let transform = state.transform();
-        let { anchorOffset } = state.selection;
-
-        return transform
-            .wrapInline({
-                type: "link",
-                data: {
-                    href: data.text
-                }
-            })
-            .moveToOffsets(anchorOffset, anchorOffset + data.text.length)
-            .apply()
-    }
-
     public onClickLink(): void {
         let state = this.getActualState();
 
@@ -1001,7 +971,6 @@ export class SlateReactComponent extends React.Component<any, any> {
             schema={this.Configuration.Schema}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
-            onPaste={this.onPaste}
             readOnly={this.readOnly}
             spellCheck={false}
             onSelectionChange={this.onSelectionChange}
