@@ -760,24 +760,25 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @return {Boolean}
      */
     private findInlineNode(type): any {
-        let state = this.getActualState();
+        const state = this.getActualState();
         return state.inlines.find(node => node.type == type)
     }
 
     private setNewState(state): void {
-        var w;
+        var actualState;
 
         if (state.state) {
-            w = state.state;
-        }else {
-            w = state;
+            actualState = state.state;
+        }
+        else {
+            actualState = state;
         }
 
         if (this.getMyself()) {
-            this.getMyself().setState({ state: w });
+            this.getMyself().setState({ state: actualState });
         }
         else {
-            this.setState({ state: w });
+            this.setState({ state: actualState });
         }
     }
 
@@ -911,36 +912,6 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.setNewState(state);
     }
 
-    /**
-     * On paste, if the text is a link, wrap the selection in a link.
-     *
-     * @param {Event} e
-     * @param {Object} data
-     * @param {State} state
-     */
-    public onPaste(e, data, state) {
-        if (state.isCollapsed) {
-            return;
-        }
-
-        if (data.type != "text" && data.type != "html") {
-            return;
-        }
-
-        let transform = state.transform();
-        let { anchorOffset } = state.selection;
-
-        return transform
-            .wrapInline({
-                type: "link",
-                data: {
-                    href: data.text
-                }
-            })
-            .moveToOffsets(anchorOffset, anchorOffset + data.text.length)
-            .apply()
-    }
-
     public onClickLink(): void {
         let state = this.getActualState();
 
@@ -994,7 +965,6 @@ export class SlateReactComponent extends React.Component<any, any> {
             schema={this.Configuration.Schema}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
-            onPaste={this.onPaste}
             readOnly={this.readOnly}
             spellCheck={false}
             onSelectionChange={this.onSelectionChange}
@@ -1002,16 +972,6 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         return editor
     }
-
-
-
-
-
-
-
-
-
-
 
     private createReactElement(tagName) {
         return properties => {
