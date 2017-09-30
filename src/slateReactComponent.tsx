@@ -1,7 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as injector from "react-frame-aware-selection-plugin";
-import { Editor, Mark, Raw, Data, State } from "slate"
+import { Mark, Raw, Data, State } from "slate";
+import { Editor } from "slate-react";
 import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
@@ -24,7 +25,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     showToolbar = false;
 
     state = {
-        state: Raw.deserialize(initialState, { terse: true }),
+        state: State.fromJSON(initialState, { terse: true }),
         getHrefData: null,
         selectionChangeListeners: [],
         disabledListeners: [],
@@ -106,36 +107,34 @@ export class SlateReactComponent extends React.Component<any, any> {
         return this.me;
     }
 
-    public renderToContainer(parentElement: HTMLElement): SlateReactComponent {
+    public renderToContainer(hostElement: HTMLElement): SlateReactComponent {
         let self = this;
 
         SlateReactComponent.dirtyHack = () => self.me;
 
         this.reactElement = React.createElement(SlateReactComponent);
-        this.parentElement = parentElement;
+        this.parentElement = hostElement;
 
-        this.me = ReactDOM.render(this.reactElement, parentElement, () => { });
+        this.me = ReactDOM.render(this.reactElement, hostElement);
 
         return this.me;
     }
 
     public applyState(state): void {
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state });
-        }
+        this.setNewState(state);
         this.getMyself().forceUpdate();
     }
 
     public getState(): Object {
-        return Raw.serialize(this.getMyself().state.state, { terse: true });
+        const st = this.getMyself().state.state.toJSON({ terse: true });
+        return st.document;
     }
 
-    public updateState(newState: Object): void {
-        let state = Raw.deserialize(newState, { terse: true });
-        this.getMyself().setState({ state })
+    public updateState(newState: any): void {
+        var st = { document: { nodes: newState.nodes } };
+
+        const state = State.fromJSON(st, { terse: true });
+        this.setNewState(state);
     }
 
     public getSelectionPosition() {
@@ -158,12 +157,8 @@ export class SlateReactComponent extends React.Component<any, any> {
         else {
             state = state.transform().select(selectionPosition).apply();
         }
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
+
+        this.setNewState(state);
 
         this.getMyself().forceUpdate();
     }
@@ -200,7 +195,8 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public removeDisabledListener(callback): void {
-        let { disabledListeners } = this.state;
+        const disabledListeners = this.state.disabledListeners;
+
         for (let i = 0; i < disabledListeners.length; i++) {
             if (disabledListeners[i] === callback) {
                 disabledListeners.splice(i);
@@ -406,7 +402,7 @@ export class SlateReactComponent extends React.Component<any, any> {
                 .apply();
         }
 
-        this.getMyself() ? this.getMyself().setState({ state: state }) : this.setState({ state: state });
+        this.setNewState(state);
         this.getMyself().forceUpdate();
     }
 
@@ -551,14 +547,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             }
         })
 
-
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
-
+        this.setNewState(state);
         this.getMyself().forceUpdate();
     }
 
@@ -573,9 +562,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     private getActualState(): State {
-        let { state } = this.getMyself() ? this.getMyself().state : this.state;
-
-        return state;
+        return this.getMyself() ? this.getMyself().state.state : this.state.state;
     }
 
     public clearSelection(): void {
@@ -664,7 +651,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             })
             .apply();
 
-        let link = state.inlines.find(node => node.type == "link");
+        const link = state.inlines.find(node => node.type == "link");
 
         if (link) {
             state = state.transform()
@@ -773,12 +760,30 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @return {Boolean}
      */
     private findInlineNode(type): any {
-        let state = this.getActualState();
+        const state = this.getActualState();
         return state.inlines.find(node => node.type == type)
     }
 
+    private setNewState(state): void {
+        var actualState;
+
+        if (state.state) {
+            actualState = state.state;
+        }
+        else {
+            actualState = state;
+        }
+
+        if (this.getMyself()) {
+            this.getMyself().setState({ state: actualState });
+        }
+        else {
+            this.setState({ state: actualState });
+        }
+    }
+
     private onSelectionChange(selection, state): void {
-        this.getMyself().setState({ state });
+        this.setNewState(state);
         this.getMyself().state.state = state;
         this.getMyself().forceUpdate();
         this.notifyListeners(this.getMyself().state.selectionChangeListeners);
@@ -790,7 +795,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {State} state
      */
     public onChange(state): void {
-        this.setState({ state });
+        this.setNewState(state);
     }
 
     /**
@@ -851,12 +856,7 @@ export class SlateReactComponent extends React.Component<any, any> {
                 .apply();
         }
 
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
+        this.setNewState(state);
     }
 
     private toggleBlock(type: string): void {
@@ -909,42 +909,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         state = transform.apply();
 
-        if (this.getMyself()) {
-            this.getMyself().setState({ state });
-        }
-        else {
-            this.setState({ state })
-        }
-    }
-
-    /**
-     * On paste, if the text is a link, wrap the selection in a link.
-     *
-     * @param {Event} e
-     * @param {Object} data
-     * @param {State} state
-     */
-    public onPaste(e, data, state) {
-        if (state.isCollapsed) {
-            return;
-        }
-
-        if (data.type != "text" && data.type != "html") {
-            return;
-        }
-
-        let transform = state.transform();
-        let { anchorOffset } = state.selection;
-
-        return transform
-            .wrapInline({
-                type: "link",
-                data: {
-                    href: data.text
-                }
-            })
-            .moveToOffsets(anchorOffset, anchorOffset + data.text.length)
-            .apply()
+        this.setNewState(state);
     }
 
     public onClickLink(): void {
@@ -976,7 +941,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             .moveToOffsets(anchorOffset, focusOffset)
             .apply();
 
-        this.setState({ state })
+        this.setNewState(state);;
     }
 
     /**
@@ -1000,7 +965,6 @@ export class SlateReactComponent extends React.Component<any, any> {
             schema={this.Configuration.Schema}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
-            onPaste={this.onPaste}
             readOnly={this.readOnly}
             spellCheck={false}
             onSelectionChange={this.onSelectionChange}
@@ -1008,16 +972,6 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         return editor
     }
-
-
-
-
-
-
-
-
-
-
 
     private createReactElement(tagName) {
         return properties => {
