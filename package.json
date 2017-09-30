@@ -22,7 +22,8 @@
         "react": "^15.6.1",
         "react-dom": "^15.6.1",
         "react-frame-aware-selection-plugin": "^1.0.0",
-        "slate": "^0.20.6"
+        "slate": "^0.25.3",
+        "slate-react": "^0.2.1"
     },
     "devDependencies": {
         "@types/es6-shim": "^0.31.34",

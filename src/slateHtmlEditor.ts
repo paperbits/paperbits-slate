@@ -56,7 +56,8 @@ export class SlateHtmlEditor implements IHtmlEditor {
             return this.slateReactComponent;
         }
         catch (error) {
-            debugger;
+            //debugger;
+            console.log(error);
         }
     }
 
