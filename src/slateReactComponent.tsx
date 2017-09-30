@@ -90,7 +90,6 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.onKeyDown = this.onKeyDown.bind(this);
         this.toggleMark = this.toggleMark.bind(this);
         this.toggleBlock = this.toggleBlock.bind(this);
-        this.onPaste = this.onPaste.bind(this);
         this.onClickLink = this.onClickLink.bind(this);
         this.render = this.render.bind(this);
         this.renderEditor = this.renderEditor.bind(this);
