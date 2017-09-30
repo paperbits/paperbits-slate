@@ -18,7 +18,6 @@
         "watch": true,
         "jsx": "react"
     },
-    "compileOnSave": false,
     "include": [
         "src/**/*.ts",
         "src/**/*.tsx"

@@ -433,10 +433,10 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public toggleBlockCategory(state, node, category: string, intentionFn: string) {
-        const data = node.data;
-        const newData = this.createOrUpdateCategory(data, category, intentionFn);
+        let { data } = node;
+        let newData = this.createOrUpdateCategory(data, category, intentionFn);
 
-        return this.updateCustomBlock(state, newData);
+        return this.updateCustomBlock(state, data, newData);
     }
 
     public createOrUpdateCategory(data, category: string, intentionFn: string) {
@@ -503,7 +503,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         return state;
     }
 
-    private updateCustomBlock(state, newData) {
+    private updateCustomBlock(state, data, newData) {
         let block = state.blocks.find(_ => true);
 
         state = state.transform()
@@ -519,11 +519,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         return state;
     }
 
-    public toggleAlignment(intentionFn): void {
+    public toggleAlignment(intentionFn) {
         this.toggleCategory("alignment", intentionFn, "block")
     }
 
-    public toggleColor(intentionFn): void {
+    public toggleColor(intentionFn) {
         this.toggleCategory("color", intentionFn, "inline")
     }
 
@@ -677,16 +677,17 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public getHyperlink(): IHyperlink {
-        const state = this.getActualState();
+        let state = this.getActualState();
         const hasInline = this.findInlineNode("link");
-        const link = state.inlines.find(node => node.type == "link");
+
+        let link = state.inlines.find(node => node.type == "link");
 
         if (!link) {
             return null;
         }
 
-        const hyperlink: any = {};
-        const dataEntries = link.data._root.entries;
+        let hyperlink: any = {};
+        let dataEntries = link.data._root.entries;
 
         for (let i = 0; i < dataEntries.length; i++) {
             hyperlink[dataEntries[i][0]] = dataEntries[i][1];
@@ -721,11 +722,10 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     private getMarkData(type) {
-        const state = this.getActualState();
-        const mark = state.marks.first(function (e) {
+        let state = this.getActualState();
+        let mark = state.marks.first(function (e) {
             return e.type == type
         });
-
         if (mark) {
             var style = mark.data.get("style");
             return style ? style : null
@@ -751,7 +751,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @return {Boolean}
      */
     private has(type): boolean {
-        const state = this.getActualState();
+        let state = this.getActualState();
         return state.blocks.some(node => node.type == type)
     }
 
@@ -762,7 +762,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @return {Boolean}
      */
     private isAligned(type): boolean {
-        const state = this.getActualState();
+        let state = this.getActualState();
         return state.blocks.some(node => node.data.get("alignment") == type)
     }
 
@@ -773,7 +773,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @return {Boolean}
      */
     private findInlineNode(type): any {
-        const state = this.getActualState();
+        let state = this.getActualState();
         return state.inlines.find(node => node.type == type)
     }
 
@@ -917,6 +917,36 @@ export class SlateReactComponent extends React.Component<any, any> {
         }
     }
 
+    /**
+     * On paste, if the text is a link, wrap the selection in a link.
+     *
+     * @param {Event} e
+     * @param {Object} data
+     * @param {State} state
+     */
+    public onPaste(e, data, state) {
+        if (state.isCollapsed) {
+            return;
+        }
+
+        if (data.type != "text" && data.type != "html") {
+            return;
+        }
+
+        let transform = state.transform();
+        let { anchorOffset } = state.selection;
+
+        return transform
+            .wrapInline({
+                type: "link",
+                data: {
+                    href: data.text
+                }
+            })
+            .moveToOffsets(anchorOffset, anchorOffset + data.text.length)
+            .apply()
+    }
+
     public onClickLink(): void {
         let state = this.getActualState();
 
@@ -970,6 +1000,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             schema={this.Configuration.Schema}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
+            onPaste={this.onPaste}
             readOnly={this.readOnly}
             spellCheck={false}
             onSelectionChange={this.onSelectionChange}
