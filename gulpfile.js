@@ -11,8 +11,7 @@ function handleError(error) {
 
 gulp.task("typescript", function () {
     var typescriptProject = typescriptCompiler.createProject("tsconfig.json", {
-        typescript: typescript,
-        declaration: true
+        typescript: typescript
     });
 
     var tsResult = typescriptProject
