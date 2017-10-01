@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as injector from "react-frame-aware-selection-plugin";
-import { Mark, Raw, Data, State } from "slate";
+import { Mark, Raw, Data, State, Change } from "slate";
 import { Editor } from "slate-react";
 import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
@@ -794,7 +794,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      *
      * @param {State} state
      */
-    public onChange(state): void {
+    public onChange(state: Change): void {
         this.setNewState(state);
     }
 
