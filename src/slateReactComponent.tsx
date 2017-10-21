@@ -395,7 +395,6 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         if (expand) {
             state = state
-                .change()
                 .select(selection)
                 .focus()
                 .state;
@@ -807,6 +806,14 @@ export class SlateReactComponent extends React.Component<any, any> {
         const myself = this.getMyself();
         myself.state.state = change.state;
         myself.forceUpdate();
+
+        if (change && 
+            change.operations && 
+            change.operations.length === 1 &&
+            change.operations[0]["properties"] && 
+            change.operations[0]["properties"].isFocused === false){
+                return;
+            }
 
         this.notifyListeners(myself.state.selectionChangeListeners);
     }
