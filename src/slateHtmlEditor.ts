@@ -23,7 +23,9 @@ export class SlateHtmlEditor implements IHtmlEditor {
             intentionsMap[key] = intentions.text.style[key].styles;
         });
 
-        Object.assign(intentionsMap, intentions.text.alignment);
+        Object.keys(intentions.text.alignment).forEach(key => {
+            Object.assign(intentionsMap, intentions.text.alignment[key]);
+        });
 
         // rebinding...
         this.getSelectionState = this.getSelectionState.bind(this);
@@ -166,6 +168,11 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
     public toggleCategory(category: string, intentionFn: string, type: string): void {
         this.slateReactComponent.toggleCategory(category, intentionFn, type);
+        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
+    }
+    
+    public toggleIntention(category: string, intentionFn: string, type: string): void {
+        this.slateReactComponent.toggleIntention(category, intentionFn, type);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
