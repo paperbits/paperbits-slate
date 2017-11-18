@@ -343,7 +343,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
 
-    public changeIntention(category: string, intentionFn: string, type: string, scope: string): void {
+    public changeIntention(category: string, intentionFn: string | string[], type: string, scope: string): void {
         let nodes;
         let changeFn;
         let state: State = this.getActualState();
@@ -405,15 +405,15 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMyself().forceUpdate();
     }
     
-    public toggleIntention(category: string, intentionFn: string, type: string): void {
+    public toggleIntention(category: string, intentionFn: string | string[], type: string): void {
         this.changeIntention(category, intentionFn, type, "intention");
     }
     
-    public toggleCategory(category: string, intentionFn: string, type: string): void {
+    public toggleCategory(category: string, intentionFn: string | string[], type: string): void {
         this.changeIntention(category, intentionFn, type, "category");
     }
 
-    public updateInlineCategory(change, node, category: string, intentionFn: string, scope: string) {
+    public updateInlineCategory(change, node, category: string, intentionFn: string | string[], scope: string) {
         let data;
         if (change.state.marks.some(m => m.type == "custom")) {
             change.state.marks.forEach(mark => {
@@ -434,21 +434,25 @@ export class SlateReactComponent extends React.Component<any, any> {
         return change;
     }
 
-    public updateBlockCategory(change, node, category: string, intentionFn: string, operation: string) {
+    public updateBlockCategory(change, node, category: string, intentionFn: string | string[], operation: string) {
         let { data } = node;
         let newData = this.updateCategory(data, category, intentionFn, operation);
 
         return this.updateCustomBlock(change, data, newData);
     }
 
-    public updateCategory(data, category: string, intentionFn: string, scope: string) {
+    public updateCategory(data, category: string, intentionFn: string | string[], scope: string) {
         if (!data) {
             if (!intentionFn) {
                 return null;
             }
 
             let categories = {};
-            categories[category] = [intentionFn]
+            if (typeof intentionFn === 'string'){
+                categories[category] = [intentionFn]
+            } else {
+                categories[category] = intentionFn;
+            }
 
             return Data.create({ categories: categories });
         }
@@ -461,7 +465,11 @@ export class SlateReactComponent extends React.Component<any, any> {
             }
 
             categories = {};
-            categories[category] = [intentionFn]
+            if (typeof intentionFn === 'string'){
+                categories[category] = [intentionFn]
+            } else {
+                categories[category] = intentionFn;
+            }
 
             return data.set("categories", categories)
         }
@@ -472,32 +480,57 @@ export class SlateReactComponent extends React.Component<any, any> {
             }
 
             categories = JSON.parse(JSON.stringify(categories))
-            categories[category] = [intentionFn];
+            if (typeof intentionFn === 'string'){
+                categories[category] = [intentionFn]
+            } else {
+                categories[category] = intentionFn;
+            }
             return data.set("categories", categories)
         }
 
         if (scope === 'intention'){
             let intentions: string[] = categories[category];
-            let intentionIndex: number = intentions.findIndex(i => i == intentionFn);
+            if (typeof intentionFn === 'string'){
+                let intentionIndex: number = intentions.findIndex(i => i == intentionFn);
+                
+                if (intentionIndex >= 0)
+                {
+                    categories = JSON.parse(JSON.stringify(categories))                    
+                    categories[category].splice(intentionIndex, 1);
+                    return data.set("categories", categories)
+                }
+    
+                if (intentionFn) {
+                    categories = JSON.parse(JSON.stringify(categories))
+                    categories[category].push(intentionFn);
+                    return data.set("categories", categories);
+                }
+            } else {
+                if (intentionFn) {
+                    categories = JSON.parse(JSON.stringify(categories))
+                    if (typeof intentionFn === 'string'){
+                        categories[category] = [intentionFn]
+                    } else {
+                        categories[category] = intentionFn;
+                    }
+                    return data.set("categories", categories);
+                }
+                else{
+                    categories = JSON.parse(JSON.stringify(categories))
+                    delete categories[category]
+                    return data.set("categories", categories);
+                }
+            }
             
-            if (intentionIndex >= 0)
-            {
-                intentions = intentions.splice(intentionIndex, 1);
-                categories = JSON.parse(JSON.stringify(categories))
-                categories[category] = intentions;
-                return data.set("categories", categories)
-            }
-
-            if (intentionFn) {
-                categories = JSON.parse(JSON.stringify(categories))
-                categories[category].push(intentionFn);
-                return data.set("categories", categories);
-            }
         }
         else {
             if (intentionFn) {
                 categories = JSON.parse(JSON.stringify(categories))
-                categories[category] = [intentionFn];
+                if (typeof intentionFn === 'string'){
+                    categories[category] = [intentionFn]
+                } else {
+                    categories[category] = intentionFn;
+                }
                 return data.set("categories", categories);
             }
             else{
@@ -538,11 +571,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         return change;
     }
 
-    public toggleAlignment(intentionFn) {
+    public toggleAlignment(intentionFn: string | string[]) {
         this.toggleCategory("alignment", intentionFn, "block")
     }
 
-    public toggleColor(intentionFn) {
+    public toggleColor(intentionFn: string | string[]) {
         this.toggleCategory("color", intentionFn, "inline")
     }
 

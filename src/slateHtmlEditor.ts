@@ -156,22 +156,22 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
-    public toggleAlignment(intentionFn: string): void {
+    public toggleAlignment(intentionFn: string | string[]): void {
         this.slateReactComponent.toggleAlignment(intentionFn);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
-    public toggleColor(intentionFn: string): void {
+    public toggleColor(intentionFn: string | string[]): void {
         this.slateReactComponent.toggleColor(intentionFn);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
-    public toggleCategory(category: string, intentionFn: string, type: string): void {
+    public toggleCategory(category: string, intentionFn: string | string[], type: string): void {
         this.slateReactComponent.toggleCategory(category, intentionFn, type);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
     
-    public toggleIntention(category: string, intentionFn: string, type: string): void {
+    public toggleIntention(category: string, intentionFn: string | string[], type: string): void {
         this.slateReactComponent.toggleIntention(category, intentionFn, type);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
