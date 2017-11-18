@@ -250,11 +250,21 @@ export class SlateReactComponent extends React.Component<any, any> {
             h6: this.hasBlock("heading-six"),
             quote: this.hasBlock("block-quote"),
             code: this.hasBlock("code"),
-            ol: this.hasBlock("numbered-list"),
-            ul: this.hasBlock("bulleted-list"),
+            ol: false, // this.hasBlock("numbered-list"),
+            ul: false, // this.hasBlock("bulleted-list"),
             intentions: this.getIntentions(),
             normal: false
         }
+        const actualState = this.getActualState();
+        const document: any = actualState.document;
+
+        state.ol = actualState.blocks.some((block) => {
+            return !!document.getClosest(block.key, parent => parent.type === 'numbered-list')
+        });
+
+        state.ul = actualState.blocks.some((block) => {
+            return !!document.getClosest(block.key, parent => parent.type === 'bulleted-list')
+        });
 
         state.normal = !(state.h1 || state.h2 || state.h3 || state.h4 || state.h4 || state.h5 || state.h6 || state.quote || state.code);
 
@@ -964,7 +974,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         else {
             const isList = this.hasBlock("list-item");
             const isType = state.blocks.some((block) => {
-                return !!document.getClosest(block, parent => parent.type == type)
+                return !!document.getClosest(block.key, parent => parent.type == type)
             });
 
             if (isList && isType) {
