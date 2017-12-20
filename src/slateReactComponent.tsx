@@ -409,6 +409,10 @@ export class SlateReactComponent extends React.Component<any, any> {
                 .select(selection)
                 .focus()
                 .state;
+        } else {
+            state = (change ? change : state.change())
+            .focus()
+            .state;
         }
 
         this.setNewState(state);
