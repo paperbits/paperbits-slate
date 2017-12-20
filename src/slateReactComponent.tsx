@@ -1095,7 +1095,12 @@ export class SlateReactComponent extends React.Component<any, any> {
                     }
                     let intentions: string[] = new Array<string>();
                     for (var i = 0; i < intentionFns.length; i++) {
-                        intentions[i] = SlateReactComponent.intentionsMap[intentionFns[i]]();
+                        const intentionFunc = SlateReactComponent.intentionsMap[intentionFns[i]];
+                        if (!intentionFunc) {
+                            console.warn(`Could not find intention with key ${intentionFns}`);
+                            return "";
+                        }
+                        intentions[i] = intentionFunc();
                     }
 
                     return intentions.join(" ");
