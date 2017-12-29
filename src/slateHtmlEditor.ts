@@ -1,31 +1,20 @@
 import "es6-shim";
-import { IntentionMapService } from "./intentionMapService";
 import { SlateReactComponent } from "./slateReactComponent";
 import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing/IHtmlEditor";
 
-
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
     private readonly permalinkService: IPermalinkService;
     private slateReactComponent: SlateReactComponent;
 
-    constructor(eventManager: IEventManager, intentionMapService: IntentionMapService) {
+    constructor(eventManager: IEventManager, intentionsProvider: any) {
         // initialization...
         this.eventManager = eventManager;
 
-        let intentions = <any>intentionMapService.getMap();
-        let intentionsMap = {};
-
-        Object.keys(intentions.text.style).forEach(key => {
-            intentionsMap[key] = intentions.text.style[key].styles;
-        });
-
-        Object.keys(intentions.text.alignment).forEach(key => {
-            Object.assign(intentionsMap, intentions.text.alignment[key]);
-        });
+        let intentions = intentionsProvider.getIntentions();
 
         // rebinding...
         this.getSelectionState = this.getSelectionState.bind(this);
@@ -48,7 +37,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.disable = this.disable.bind(this);
         this.renderToContainer = this.renderToContainer.bind(this);
 
-        this.slateReactComponent = new SlateReactComponent(intentionsMap);
+        this.slateReactComponent = new SlateReactComponent(intentions.flattenMap);
     }
 
     public renderToContainer(element: HTMLElement): IHtmlEditor {
