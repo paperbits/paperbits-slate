@@ -7,7 +7,7 @@ import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { SelectionState } from "@paperbits/common/editing/IHtmlEditor";
-import { IBag } from "@paperbits/common/core/IBag";
+import { IBag } from "@paperbits/common/IBag";
 
 injector();
 
