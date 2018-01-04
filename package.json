@@ -1,6 +1,6 @@
 {
   "name": "@paperbits/slate",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Paperbits HTML editor based on Slate.",
   "author": "Vienna LLC",
   "license": "GPL-3.0",
