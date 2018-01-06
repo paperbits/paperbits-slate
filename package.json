@@ -16,7 +16,7 @@
     "url": "https://github.com/paperbits/paperbits-slate/issues"
   },
   "dependencies": {
-    "@paperbits/common": "0.0.41",
+    "@paperbits/common": "0.0.42",
     "es6-shim": "^0.35.3",
     "immutable": "^3.8.1",
     "react": "^15.6.1",
