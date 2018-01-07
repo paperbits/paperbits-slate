@@ -19,11 +19,12 @@
     "@paperbits/common": "0.0.42",
     "es6-shim": "^0.35.3",
     "immutable": "^3.8.1",
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
-    "react-frame-aware-selection-plugin": "^1.0.0",
-    "slate": "^0.25.3",
-    "slate-react": "^0.2.1"
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-frame-aware-selection-plugin": "^2.0.2",
+    "react-frame-component": "^2.0.1",
+    "slate": "^0.32.0",
+    "slate-react": "^0.11.0"
   },
   "devDependencies": {
     "@types/es6-shim": "^0.31.34",
