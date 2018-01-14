@@ -1,5 +1,7 @@
 import "es6-shim";
-import { SlateReactComponent } from "./slateReactComponent";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { SlateReactComponent, SlateReactComponentParameters } from "./slateReactComponent";
 import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
@@ -9,12 +11,13 @@ export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
     private readonly permalinkService: IPermalinkService;
     private slateReactComponent: SlateReactComponent;
+    private readonly intentions: any;
 
     constructor(eventManager: IEventManager, intentionsProvider: any) {
         // initialization...
         this.eventManager = eventManager;
 
-        let intentions = intentionsProvider.getIntentions();
+        this.intentions = intentionsProvider.getIntentions();
 
         // rebinding...
         this.getSelectionState = this.getSelectionState.bind(this);
@@ -37,14 +40,25 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.disable = this.disable.bind(this);
         this.renderToContainer = this.renderToContainer.bind(this);
 
-        this.slateReactComponent = new SlateReactComponent(intentions.flattenMap);
+        // this.slateParams : SlateReactComponentParameters = {
+        //     getSelectionStateCallback: null
+        // };
     }
 
-    public renderToContainer(element: HTMLElement): IHtmlEditor {
+    public renderToContainer(element: HTMLElement): void {
         try {
-            this.slateReactComponent = this.slateReactComponent.renderToContainer(element);
 
-            return this.slateReactComponent;
+            
+            const props: SlateReactComponentParameters = {
+                parentElement: element,
+                instanceSupplier: (slate: SlateReactComponent) => { this.slateReactComponent = slate; },
+                intentionsMap: this.intentions.flattenMap
+            }
+            
+            const reactElement = React.createElement(SlateReactComponent, props);
+
+
+            this.slateReactComponent = ReactDOM.render(reactElement, element)
         }
         catch (error) {
             debugger;

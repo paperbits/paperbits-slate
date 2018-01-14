@@ -2,11 +2,11 @@ export var initialState = {
     "document": {
         "nodes": [
             {
-                "kind": "block",
+                "object": "block",
                 "type": "paragraph",
                 "nodes": [
                     {
-                        "kind": "text",
+                        "object": "text",
                         "ranges": [
                             {
                                 "text": "This is editable."
