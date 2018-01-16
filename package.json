@@ -19,6 +19,7 @@
     "@paperbits/common": "0.0.43",
     "es6-shim": "^0.35.3",
     "immutable": "^3.8.1",
+    "is-hotkey": "^0.1.1",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-frame-aware-selection-plugin": "^2.0.2",
