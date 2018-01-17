@@ -12,63 +12,19 @@ import { isKeyHotkey } from 'is-hotkey'
 
 injector();
 
+export interface SlateReactComponentState{
+    value: any,
+    getHrefData: any,
+    selectionChangeListeners: Array<any>,
+    disabledListeners: Array<any>,
+    enabledListeners: Array<any>,
+    readOnly: boolean
+}
+
 export interface SlateReactComponentParameters{
     parentElement: HTMLElement,
     instanceSupplier: (SlateReactComponent) => void,
     intentionsMap: any
-        /*renderToContainer = this.renderToContainer.bind(this);
-        this.updateState = this.updateState.bind(this);
-        this.getState = this.getState.bind(this);
-        this.getSelectionPosition = this.getSelectionPosition.bind(this);
-        this.setSelectionPosition = this.setSelectionPosition.bind(this);
-        this.addSelectionChangeListener = this.addSelectionChangeListener.bind(this);
-        this.removeSelectionChangeListener = this.removeSelectionChangeListener.bind(this);
-        this.addDisabledListener = this.addDisabledListener.bind(this);
-        this.removeDisabledListener = this.removeDisabledListener.bind(this);
-        this.addEnabledListener = this.addEnabledListener.bind(this);
-        this.removeEnabledListener = this.removeEnabledListener.bind(this);
-        this.notifyListeners = this.notifyListeners.bind(this);
-        this.addOpenLinkEditorListener = this.addOpenLinkEditorListener.bind(this);
-        this.getSelectionState = this.getSelectionState.bind(this);
-        this.getIntentions = this.getIntentions.bind(this);
-        this.toggleBold = this.toggleBold.bind(this);
-        this.toggleItalic = this.toggleItalic.bind(this);
-        this.toggleUnderlined = this.toggleUnderlined.bind(this);
-        this.toggleUl = this.toggleUl.bind(this);
-        this.toggleOl = this.toggleOl.bind(this);
-        this.toggleH1 = this.toggleH1.bind(this);
-        this.toggleH2 = this.toggleH2.bind(this);
-        this.toggleH3 = this.toggleH3.bind(this);
-        this.toggleH4 = this.toggleH4.bind(this);
-        this.toggleH5 = this.toggleH5.bind(this);
-        this.toggleH6 = this.toggleH6.bind(this);
-        this.toggleQuote = this.toggleQuote.bind(this);
-        this.toggleCode = this.toggleCode.bind(this);
-        this.toggleCategory = this.toggleCategory.bind(this);
-        this.updateInlineCategory = this.updateInlineCategory.bind(this);
-        this.updateBlockCategory = this.updateBlockCategory.bind(this);
-        this.updateCategory = this.updateCategory.bind(this);
-        this.updateCustomMark = this.updateCustomMark.bind(this);
-        this.updateCustomBlock = this.updateCustomBlock.bind(this);
-        this.toggleAlignment = this.toggleAlignment.bind(this);
-        this.toggleColor = this.toggleColor.bind(this);
-        this.resetToNormal = this.resetToNormal.bind(this);
-        this.enable = this.enable.bind(this);
-        this.disable = this.disable.bind(this);
-        this.setHyperlink = this.setHyperlink.bind(this);
-        this.getHyperlink = this.getHyperlink.bind(this);
-        this.removeHyperlink = this.removeHyperlink.bind(this);
-        this.hasMark = this.hasMark.bind(this);
-        this.getMarkData = this.getMarkData.bind(this);
-        this.hasBlock = this.hasBlock.bind(this);
-        this.has = this.has.bind(this);
-        this.isAligned = this.isAligned.bind(this);
-        this.findInlineNode = this.findInlineNode.bind(this);
-        this.onChange = this.onChange.bind(this);
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.toggleMark = this.toggleMark.bind(this);
-        this.toggleBlock = this.toggleBlock.bind(this);
-        this.onClickLink = this.onClickLink.bind(this);*/
 }
 
 export class SlateReactComponent extends React.Component<any, any> {
@@ -89,14 +45,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     parentElement = null;
     showToolbar = false;
 
-    state = {
-        value: Value.fromJSON(initialState, { terse: true }),
-        getHrefData: null,
-        selectionChangeListeners: [],
-        disabledListeners: [],
-        enabledListeners: [],
-        readOnly: true
-    }
+    state : SlateReactComponentState;
 
     constructor(props: SlateReactComponentParameters) {
         super(props);
@@ -158,7 +107,14 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.render = this.render.bind(this);
         this.renderEditor = this.renderEditor.bind(this);
         this.createReactElementInternal = this.createReactElementInternal.bind(this);
-        this.state.value = Value.fromJSON(initialState, { terse: true });
+        this.state = {
+            value: Value.fromJSON(initialState, { terse: true }),
+            getHrefData: null,
+            selectionChangeListeners: [],
+            disabledListeners: [],
+            enabledListeners: [],
+            readOnly: true
+        }
     }
 
     public getMyself(): SlateReactComponent {
@@ -655,7 +611,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public disable(): void {
-        this.setState({readOnly: false});
+        this.setState({readOnly: true});
         this.clearSelection();
     }
 
@@ -1032,7 +988,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             value={this.state.value}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
-            readOnly={this.state.value.readOnly}
+            readOnly={this.state.readOnly}
             spellCheck={false}
             renderNode={this.renderNode}
             renderMark={this.renderMark}
