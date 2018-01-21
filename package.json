@@ -1,40 +1,40 @@
 {
-  "name": "@paperbits/slate",
-  "version": "0.0.43",
-  "description": "Paperbits HTML editor based on Slate.",
-  "author": "Vienna LLC",
-  "license": "GPL-3.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/paperbits/paperbits-slate.git"
-  },
-  "keywords": [
-    "paperbits",
-    "slate"
-  ],
-  "bugs": {
-    "url": "https://github.com/paperbits/paperbits-slate/issues"
-  },
-  "dependencies": {
-    "@paperbits/common": "0.0.43",
-    "es6-shim": "^0.35.3",
-    "immutable": "^3.8.1",
-    "is-hotkey": "^0.1.1",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
-    "react-frame-aware-selection-plugin": "^2.0.2",
-    "react-frame-component": "^2.0.1",
-    "slate": "^0.32.0",
-    "slate-react": "^0.11.0"
-  },
-  "devDependencies": {
-    "@types/es6-shim": "^0.31.34",
-    "@types/immutable": "^3.8.7",
-    "@types/react": "^15.0.38",
-    "gulp": "^3.9.1",
-    "gulp-sourcemaps": "^2.6.0",
-    "gulp-typescript": "^3.2.1",
-    "merge2": "^1.1.0",
-    "typescript": "^2.4.1"
-  }
+    "name": "@paperbits/slate",
+    "version": "0.0.46",
+    "description": "Paperbits HTML editor based on Slate.",
+    "author": "Vienna LLC",
+    "license": "GPL-3.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/paperbits/paperbits-slate.git"
+    },
+    "keywords": [
+        "paperbits",
+        "slate"
+    ],
+    "bugs": {
+        "url": "https://github.com/paperbits/paperbits-slate/issues"
+    },
+    "dependencies": {
+        "@paperbits/common": "0.0.46",
+        "es6-shim": "^0.35.3",
+        "immutable": "^3.8.1",
+        "is-hotkey": "^0.1.1",
+        "react": "^16.0.0",
+        "react-dom": "^16.0.0",
+        "react-frame-aware-selection-plugin": "^2.0.2",
+        "react-frame-component": "^2.0.1",
+        "slate": "^0.32.0",
+        "slate-react": "^0.11.0"
+    },
+    "devDependencies": {
+        "@types/es6-shim": "^0.31.34",
+        "@types/immutable": "^3.8.7",
+        "@types/react": "^15.0.38",
+        "gulp": "^3.9.1",
+        "gulp-sourcemaps": "^2.6.0",
+        "gulp-typescript": "^3.2.1",
+        "merge2": "^1.1.0",
+        "typescript": "^2.4.1"
+    }
 }
