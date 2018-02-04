@@ -6,6 +6,7 @@ import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing/IHtmlEditor";
+import { Intention } from "../../paperbits-common/src/appearence/intention";
 
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
@@ -52,7 +53,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
             const props: SlateReactComponentParameters = {
                 parentElement: element,
                 instanceSupplier: (slate: SlateReactComponent) => { this.slateReactComponent = slate; },
-                intentionsMap: this.intentions.flattenMap
+                intentions: this.intentions
             }
             
             const reactElement = React.createElement(SlateReactComponent, props);
@@ -158,24 +159,9 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.slateReactComponent.toggleCode();
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
-
-    public toggleAlignment(intentionFn: string | string[]): void {
-        this.slateReactComponent.toggleAlignment(intentionFn);
-        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
-    }
-
-    public toggleColor(intentionFn: string | string[]): void {
-        this.slateReactComponent.toggleColor(intentionFn);
-        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
-    }
-
-    public toggleCategory(category: string, intentionFn: string | string[], type: string): void {
-        this.slateReactComponent.toggleCategory(category, intentionFn, type);
-        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
-    }
     
-    public toggleIntention(category: string, intentionFn: string | string[], type: string): void {
-        this.slateReactComponent.toggleIntention(category, intentionFn, type);
+    public toggleIntention(intention: Intention): void {
+        this.slateReactComponent.toggleIntention(intention);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
@@ -214,5 +200,9 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
     public getSelectionText(): string {
         return this.slateReactComponent.getSelectionText();
+    }
+
+    public removeAllIntentions(): void{
+        return this.slateReactComponent.removeAllIntentions();
     }
 }
