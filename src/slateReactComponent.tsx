@@ -7,6 +7,8 @@ import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { SelectionState } from "@paperbits/common/editing/IHtmlEditor";
+import { Intention } from "@paperbits/common/appearence/Intention";
+import * as Utils from "@paperbits/common/utils";
 import { IBag } from "@paperbits/common/IBag";
 import { isKeyHotkey } from 'is-hotkey'
 
@@ -24,7 +26,7 @@ export interface SlateReactComponentState{
 export interface SlateReactComponentParameters{
     parentElement: HTMLElement,
     instanceSupplier: (SlateReactComponent) => void,
-    intentionsMap: any
+    intentions: any
 }
 
 export class SlateReactComponent extends React.Component<any, any> {
@@ -38,7 +40,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     private static DEFAULT_NODE = "paragraph";
     private static DEFAULT_ALIGNMENT = "align-left";
     
-    private intentionsMap = {};
+    private intentions : any = {};
     private reactElement = null;
 
     me = null;
@@ -49,7 +51,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     constructor(props: SlateReactComponentParameters) {
         super(props);
-        this.intentionsMap = props.intentionsMap;
+        this.intentions = props.intentions;
         props.instanceSupplier(this);
         this.getMyself = this.getMyself.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -79,14 +81,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.toggleH6 = this.toggleH6.bind(this);
         this.toggleQuote = this.toggleQuote.bind(this);
         this.toggleCode = this.toggleCode.bind(this);
-        this.toggleCategory = this.toggleCategory.bind(this);
-        this.updateInlineCategory = this.updateInlineCategory.bind(this);
-        this.updateBlockCategory = this.updateBlockCategory.bind(this);
-        this.updateCategory = this.updateCategory.bind(this);
+        this.toggleInlineIntention = this.toggleInlineIntention.bind(this);
+        this.toggleBlockIntention = this.toggleBlockIntention.bind(this);
+        this.toggleIntention = this.toggleIntention.bind(this);
         this.updateCustomMark = this.updateCustomMark.bind(this);
         this.updateCustomBlock = this.updateCustomBlock.bind(this);
-        this.toggleAlignment = this.toggleAlignment.bind(this);
-        this.toggleColor = this.toggleColor.bind(this);
         this.resetToNormal = this.resetToNormal.bind(this);
         this.enable = this.enable.bind(this);
         this.disable = this.disable.bind(this);
@@ -270,18 +269,24 @@ export class SlateReactComponent extends React.Component<any, any> {
         return selectionState;
     }
 
-    private getIntentions(): IBag<string[]> {
-        const result = {};
+    private getIntentions(): any {
+        let result : any = {};
         const value = this.getActualState();
 
         value.blocks.forEach(block => {
-            const categories = block.data.get("categories");
-            Object.assign(result, categories);
+            const storedIntentions = block.data.get("intentions");
+            if (storedIntentions) {
+                const intentions = this.findIntentions(storedIntentions);
+                result = Utils.mergeDeep(result, intentions);
+            }
         });
 
         value.marks.forEach(mark => {
-            const categories = mark.data.get("categories");
-            Object.assign(result, categories);
+            const storedIntentions = mark.data.get("intentions");
+            if (storedIntentions) {
+                const intentions = this.findIntentions(storedIntentions);
+                result = Utils.mergeDeep(result, intentions);
+            }
         })
 
         return result;
@@ -339,24 +344,28 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.toggleBlock("code");
     }
 
-    public changeIntention(category: string, intentionFn: string | string[], type: string, scope: string): void {
+    public removeAllIntentions(): void{
+        
+    }
+
+    public toggleIntention(intention: Intention): void {
         let nodes;
-        let changeFn;
+        let changeFn: (change: Change, node: Node, intention: Intention) => void;
         let value: Value = this.getActualState();
         const expand = value.isExpanded;
         const selection = value.selection;
 
-        switch (type) {
+        switch (intention.scope) {
             case "inline":
                 nodes = value.texts;
-                changeFn = this.updateInlineCategory;
+                changeFn = this.toggleInlineIntention;
                 break;
             case "block":
                 nodes = value.blocks;
-                changeFn = this.updateBlockCategory;
+                changeFn = this.toggleBlockIntention;
                 break;
             default:
-                throw new Error("Unexpected type value: " + type)
+                throw new Error("Unexpected scope value: " + intention.scope)
         }
         let change;
 
@@ -387,7 +396,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
                 change = change.select(newSelection);
             }
-            change = changeFn(change, node, category, intentionFn, scope);
+            change = changeFn(change, node, intention);
         }, this);
 
         if (expand) {
@@ -401,16 +410,8 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         this.applyChanges(change);
     }
-    
-    public toggleIntention(category: string, intentionFn: string | string[], type: string): void {
-        this.changeIntention(category, intentionFn, type, "intention");
-    }
-    
-    public toggleCategory(category: string, intentionFn: string | string[], type: string): void {
-        this.changeIntention(category, intentionFn, type, "category");
-    }
 
-    public updateInlineCategory(change, node, category: string, intentionFn: string | string[], scope: string) {
+    public toggleInlineIntention(change, node, intention: Intention): void {
         let data;
         if (change.value.marks.some(m => m.type == "custom")) {
             change.value.marks.forEach(mark => {
@@ -418,126 +419,66 @@ export class SlateReactComponent extends React.Component<any, any> {
                     data = mark.data
                 }
 
-                let newData = this.updateCategory(data, category, intentionFn, scope);
+                let newData = this.toggleIntentionInternal(data, intention);
 
                 change = this.updateCustomMark(change, data, newData, mark);
             })
         }
         else {
-            const newData = this.updateCategory(null, category, intentionFn, scope);
+            const newData = this.toggleIntentionInternal(null, intention);
 
             change = this.updateCustomMark(change, data, newData);
         }
         return change;
     }
 
-    public updateBlockCategory(change, node, category: string, intentionFn: string | string[], operation: string) {
+    public toggleBlockIntention(change, node, intention: Intention) {
         let { data } = node;
-        let newData = this.updateCategory(data, category, intentionFn, operation);
+        let newData = this.toggleIntentionInternal(data, intention);
 
         return this.updateCustomBlock(change, data, newData);
     }
 
-    public updateCategory(data, category: string, intentionFn: string | string[], scope: string) {
+    public toggleIntentionInternal(data: Data, intention: Intention): Map<string, any> {
+        const storedIntention : any = this.toStoredIntention(intention);
+        
         if (!data) {
-            if (!intentionFn) {
+            if (!intention) {
                 return null;
             }
 
-            let categories = {};
-            if (typeof intentionFn === 'string'){
-                categories[category] = [intentionFn]
-            } else {
-                categories[category] = intentionFn;
-            }
-
-            return Data.create({ categories: categories });
+            return Data.create({intentions: storedIntention });
         }
 
-        let categories = data.get("categories");
+        let storedIntentions = data.get("intentions");
 
-        if (!categories) {
-            if (!intentionFn) {
-                return data;
-            }
-
-            categories = {};
-            if (typeof intentionFn === 'string'){
-                categories[category] = [intentionFn]
-            } else {
-                categories[category] = intentionFn;
-            }
-
-            return data.set("categories", categories)
+        if (!storedIntentions)
+        {
+            return data.set("intentions", storedIntention);
         }
 
-        if (!categories[category] || typeof categories[category] === 'string') {
-            if (!intentionFn) {
-                return data;
-            }
-
-            categories = JSON.parse(JSON.stringify(categories))
-            if (typeof intentionFn === 'string'){
-                categories[category] = [intentionFn]
-            } else {
-                categories[category] = intentionFn;
-            }
-            return data.set("categories", categories)
+        if (Utils.intersectDeep(storedIntentions, (t, s, k) => t[k] == s[k] ? t[k] : undefined, storedIntention)){
+            storedIntentions = Utils.complementDeep(storedIntentions, true, storedIntention);
+        } else {
+            storedIntentions = Utils.mergeDeep(storedIntentions, storedIntention)
         }
 
-        if (scope === 'intention'){
-            let intentions: string[] = categories[category];
-            if (typeof intentionFn === 'string'){
-                let intentionIndex: number = intentions.findIndex(i => i == intentionFn);
-                
-                if (intentionIndex >= 0)
-                {
-                    categories = JSON.parse(JSON.stringify(categories))                    
-                    categories[category].splice(intentionIndex, 1);
-                    return data.set("categories", categories)
-                }
-    
-                if (intentionFn) {
-                    categories = JSON.parse(JSON.stringify(categories))
-                    categories[category].push(intentionFn);
-                    return data.set("categories", categories);
-                }
-            } else {
-                if (intentionFn) {
-                    categories = JSON.parse(JSON.stringify(categories))
-                    if (typeof intentionFn === 'string'){
-                        categories[category] = [intentionFn]
-                    } else {
-                        categories[category] = intentionFn;
-                    }
-                    return data.set("categories", categories);
-                }
-                else{
-                    categories = JSON.parse(JSON.stringify(categories))
-                    delete categories[category]
-                    return data.set("categories", categories);
-                }
-            }
-            
+        if (storedIntentions) {
+            return data.set("intentions", storedIntentions);
         }
         else {
-            if (intentionFn) {
-                categories = JSON.parse(JSON.stringify(categories))
-                if (typeof intentionFn === 'string'){
-                    categories[category] = [intentionFn]
-                } else {
-                    categories[category] = intentionFn;
-                }
-                return data.set("categories", categories);
-            }
-            else{
-                categories = JSON.parse(JSON.stringify(categories))
-                delete categories[category];
-                return data.set("categories", categories);
-            }
+            return data.delete("intentions");
         }
-
-        return data;
+    }
+    
+    private toStoredIntention(intention: Intention): any{
+        const segments = intention.fullId.split(".");
+        const lastSegment = segments[segments.length - 1];
+        let result = {};
+        const path = intention.fullId.substring(0, intention.fullId.lastIndexOf("."))
+        Utils.setStructure(path, result, ".")
+        result = Utils.replace(path, result, lastSegment, ".")
+        return result;
     }
 
     private updateCustomMark(change, data, newData, mark?): any {
@@ -566,14 +507,6 @@ export class SlateReactComponent extends React.Component<any, any> {
             });
 
         return change;
-    }
-
-    public toggleAlignment(intentionFn: string | string[]) {
-        this.toggleCategory("alignment", intentionFn, "block")
-    }
-
-    public toggleColor(intentionFn: string | string[]) {
-        this.toggleCategory("color", intentionFn, "inline")
     }
 
     public resetToNormal(): void {
@@ -1047,58 +980,43 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     private createReactElementInternal(tagName: string, properties: any): JSX.Element {
         const data = properties.mark ? properties.mark.data : properties.node.data;
-        const categories = data.get("categories");
+        let storedIntentions = data.get("intentions");
 
-        if (!categories) {
+        if (!storedIntentions) {
             return React.createElement(tagName, properties.attributes, properties.children);
         }
 
         const attributes = properties.attributes || {};
 
         // TODO: Make universal!!!
-        const classNameCategoryKeys = Object.keys(categories).filter(x => x !== "anchorKey" && x !== "anchorId");
+        const intentionSubtree : any = this.findIntentions(storedIntentions);
+        const intentions : Intention[] = Utils.leaves(intentionSubtree);
 
-        if (classNameCategoryKeys.length > 0) {
-            const className = classNameCategoryKeys
-                .map(category => categories[category])
-                .map((intentionFns: () => string[]) => {
-                    if (typeof intentionFns === "string"){
-                        const intentionFunc = this.intentionsMap[intentionFns];
-                        
-                        if (!intentionFunc) {
-                            console.warn(`Could not find intention with key ${intentionFns}`);
-                            return "";
-                        }
-    
-                        return intentionFunc();
-                    }
-                    let intentions: string[] = new Array<string>();
-                    for (var i = 0; i < intentionFns.length; i++) {
-                        const intentionFunc = this.intentionsMap[intentionFns[i]];
-                        if (!intentionFunc) {
-                            console.warn(`Could not find intention with key ${intentionFns}`);
-                            return "";
-                        }
-                        intentions[i] = intentionFunc.styles();
-                    }
-
-                    return intentions.join(" ");
-                })
-                .join(" ");
+        if (intentions.length > 0) {
+            const className = intentions.map(intention => intention.params()).join(" ");
 
             Object.assign(attributes, { className: className });
         }
 
         // TODO: Switch to node.data
-        const anchorCategoryKey = Object.keys(categories).find(x => x === "anchorId");
+        const anchorIntentionKey = Object.keys(intentions).find(x => x === "anchorId");
 
-        if (anchorCategoryKey) {
-            const id = categories[anchorCategoryKey];
+        if (anchorIntentionKey) {
+            const id = intentions[anchorIntentionKey];
 
             Object.assign(attributes, { id: id });
         }
 
         return properties.children ? React.createElement(tagName, attributes, properties.children) : React.createElement(tagName, attributes);
+    }
+
+    private findIntentions(intentionIds: any): any {
+
+        const intentionSubtree = Utils.intersectDeep(this.intentions, 
+            (target: any, source: any, key: string) => 
+                ({ [source[key]]: target[key][source[key]] }), intentionIds);
+
+        return intentionSubtree;
     }
 
     private createLinkElement(properties) {
