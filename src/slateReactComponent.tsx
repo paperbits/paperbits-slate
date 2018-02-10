@@ -1014,26 +1014,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         const intentionSubtree = Utils.intersectDeep(this.intentions, 
             (target: any, source: any, key: string) => 
-            {
-                console.log(target);
-                console.log(source);
-                console.log(key);
-                if (!target){
-                    console.log("Oh")
-                }
-                if (!target[key]){
-                    console.log("Oh")
-                }
-                if (!source){
-                    console.log("Oh")
-                }
-                if (!source[key]){
-                    console.log("Oh")
-                }
-                if (!target[key][source[key]]){
-                    console.log("Oh")
-                }
-                return ({ [source[key]]: target[key][source[key]] })}, intentionIds);
+                ({ [source[key]]: target[key][source[key]] }), intentionIds);
 
         return intentionSubtree;
     }
