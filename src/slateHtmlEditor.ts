@@ -6,7 +6,7 @@ import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing/IHtmlEditor";
-import { Intention } from "../../paperbits-common/src/appearence/intention";
+import { Intention } from "../../paperbits-common/src/appearance/intention";
 
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
@@ -40,24 +40,17 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.removeHyperlink = this.removeHyperlink.bind(this);
         this.disable = this.disable.bind(this);
         this.renderToContainer = this.renderToContainer.bind(this);
-
-        // this.slateParams : SlateReactComponentParameters = {
-        //     getSelectionStateCallback: null
-        // };
     }
 
     public renderToContainer(element: HTMLElement): void {
         try {
-
-            
             const props: SlateReactComponentParameters = {
                 parentElement: element,
                 instanceSupplier: (slate: SlateReactComponent) => { this.slateReactComponent = slate; },
                 intentions: this.intentions
             }
-            
-            const reactElement = React.createElement(SlateReactComponent, props);
 
+            const reactElement = React.createElement(SlateReactComponent, props);
 
             this.slateReactComponent = ReactDOM.render(reactElement, element)
         }
@@ -67,7 +60,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public getSelectionState(): SelectionState {
-        let state = this.slateReactComponent.getSelectionState();
+        const state = this.slateReactComponent.getSelectionState();
 
         state.normal = !state.h1 && !state.h2 && !state.h3 && !state.h4 && !state.h5 && !state.h6 && !state.code && !state.quote;
 
@@ -159,9 +152,14 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.slateReactComponent.toggleCode();
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
-    
+
     public toggleIntention(intention: Intention): void {
         this.slateReactComponent.toggleIntention(intention);
+        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
+    }
+
+    public setIntention(intention: Intention): void {
+        this.slateReactComponent.setIntention(intention);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
@@ -202,7 +200,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         return this.slateReactComponent.getSelectionText();
     }
 
-    public removeAllIntentions(): void{
+    public removeAllIntentions(): void {
         return this.slateReactComponent.removeAllIntentions();
     }
 }

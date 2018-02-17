@@ -7,14 +7,14 @@ import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { SelectionState } from "@paperbits/common/editing/IHtmlEditor";
-import { Intention } from "@paperbits/common/appearence/Intention";
+import { Intention } from "@paperbits/common/appearance/Intention";
 import * as Utils from "@paperbits/common/utils";
 import { IBag } from "@paperbits/common/IBag";
 import { isKeyHotkey } from 'is-hotkey'
 
 injector();
 
-export interface SlateReactComponentState{
+export interface SlateReactComponentState {
     value: any,
     getHrefData: any,
     selectionChangeListeners: Array<any>,
@@ -23,34 +23,25 @@ export interface SlateReactComponentState{
     readOnly: boolean
 }
 
-export interface SlateReactComponentParameters{
+export interface SlateReactComponentParameters {
     parentElement: HTMLElement,
     instanceSupplier: (SlateReactComponent) => void,
     intentions: any
 }
 
 export class SlateReactComponent extends React.Component<any, any> {
-
-    private isBoldHotkey = isKeyHotkey('mod+b')
-    private isItalicHotkey = isKeyHotkey('mod+i')
-    private isUnderlinedHotkey = isKeyHotkey('mod+u')
-    private isCodeHotkey = isKeyHotkey('mod+`')
-
-    private static dirtyHack;
+    private isBoldHotkey = isKeyHotkey('mod+b');
+    private isItalicHotkey = isKeyHotkey('mod+i');
+    private isUnderlinedHotkey = isKeyHotkey('mod+u');
+    private isCodeHotkey = isKeyHotkey('mod+`');
     private static DEFAULT_NODE = "paragraph";
-    private static DEFAULT_ALIGNMENT = "align-left";
-    
-    private intentions : any = {};
-    private reactElement = null;
+    private intentions: any = {};
 
-    me = null;
-    parentElement = null;
-    showToolbar = false;
-
-    state : SlateReactComponentState;
+    state: SlateReactComponentState;
 
     constructor(props: SlateReactComponentParameters) {
         super(props);
+
         this.intentions = props.intentions;
         props.instanceSupplier(this);
         this.getMyself = this.getMyself.bind(this);
@@ -81,8 +72,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.toggleH6 = this.toggleH6.bind(this);
         this.toggleQuote = this.toggleQuote.bind(this);
         this.toggleCode = this.toggleCode.bind(this);
+        this.setInlineIntention = this.setInlineIntention.bind(this);
         this.toggleInlineIntention = this.toggleInlineIntention.bind(this);
+        this.setBlockIntention = this.setBlockIntention.bind(this);
         this.toggleBlockIntention = this.toggleBlockIntention.bind(this);
+        this.setIntention = this.setIntention.bind(this);
         this.toggleIntention = this.toggleIntention.bind(this);
         this.updateCustomMark = this.updateCustomMark.bind(this);
         this.updateCustomBlock = this.updateCustomBlock.bind(this);
@@ -129,7 +123,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         var st = { document: { nodes: newState.nodes } };
 
         const value = Value.fromJSON(st, { terse: true });
-        this.setState({value:value});
+        this.setState({ value: value });
         this.forceUpdate();
     }
 
@@ -261,16 +255,16 @@ export class SlateReactComponent extends React.Component<any, any> {
             return !!document.getClosest(block.key, parent => parent.type === 'bulleted-list')
         });
 
-        selectionState.normal = !(selectionState.h1 || selectionState.h2 || 
-            selectionState.h3 || selectionState.h4 || selectionState.h4 || 
-            selectionState.h5 || selectionState.h6 || selectionState.quote || 
+        selectionState.normal = !(selectionState.h1 || selectionState.h2 ||
+            selectionState.h3 || selectionState.h4 || selectionState.h4 ||
+            selectionState.h5 || selectionState.h6 || selectionState.quote ||
             selectionState.code);
 
         return selectionState;
     }
 
     private getIntentions(): any {
-        let result : any = {};
+        let result: any = {};
         const value = this.getActualState();
 
         value.blocks.forEach(block => {
@@ -344,11 +338,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.toggleBlock("code");
     }
 
-    public removeAllIntentions(): void{
-        
+    public removeAllIntentions(): void {
+
     }
 
-    public toggleIntention(intention: Intention): void {
+    public setIntention(intention: Intention): void {
         let nodes;
         let changeFn: (change: Change, node: Node, intention: Intention) => void;
         let value: Value = this.getActualState();
@@ -358,18 +352,19 @@ export class SlateReactComponent extends React.Component<any, any> {
         switch (intention.scope) {
             case "inline":
                 nodes = value.texts;
-                changeFn = this.toggleInlineIntention;
+                changeFn = this.setInlineIntention;
                 break;
             case "block":
                 nodes = value.blocks;
-                changeFn = this.toggleBlockIntention;
+                changeFn = this.setBlockIntention;
                 break;
             default:
                 throw new Error("Unexpected scope value: " + intention.scope)
         }
+
         let change;
 
-        nodes.forEach(function (node) {
+        nodes.forEach((node) => {
             change = value.change().moveToRangeOf(node);
 
             if (change.value.selection.startKey == selection.startKey &&
@@ -405,7 +400,72 @@ export class SlateReactComponent extends React.Component<any, any> {
                 .focus();
         } else {
             value = (change ? change : value.change())
-            .focus();
+                .focus();
+        }
+
+        this.applyChanges(change);
+    }
+
+
+    public toggleIntention(intention: Intention): void {
+        let nodes;
+        let changeFn: (change: Change, node: Node, intention: Intention) => void;
+        let value: Value = this.getActualState();
+        const expand = value.isExpanded;
+        const selection = value.selection;
+
+        switch (intention.scope) {
+            case "inline":
+                nodes = value.texts;
+                changeFn = this.toggleInlineIntention;
+                break;
+            case "block":
+                nodes = value.blocks;
+                changeFn = this.toggleBlockIntention;
+                break;
+            default:
+                throw new Error("Unexpected scope value: " + intention.scope)
+        }
+
+        let change;
+
+        nodes.forEach((node) => {
+            change = value.change().moveToRangeOf(node);
+
+            if (change.value.selection.startKey == selection.startKey &&
+                change.value.selection.startOffset < selection.startOffset ||
+                change.value.selection.endKey == selection.endKey &&
+                change.value.selection.endOffset > selection.endOffset) {
+
+                const newSelection = {
+                    anchorKey: change.value.selection.startKey,
+                    anchorOffset: change.value.selection.startOffset,
+                    focusKey: change.value.selection.endKey,
+                    focusOffset: change.value.selection.endOffset
+                }
+
+                if (change.value.selection.startKey == selection.startKey && change.value.selection.startOffset < selection.startOffset) {
+                    newSelection.anchorKey = selection.startKey
+                    newSelection.anchorOffset = selection.startOffset
+                }
+
+                if (change.value.selection.endKey == selection.endKey && change.value.selection.endOffset > selection.endOffset) {
+                    newSelection.focusKey = selection.endKey
+                    newSelection.focusOffset = selection.endOffset
+                }
+
+                change = change.select(newSelection);
+            }
+            change = changeFn(change, node, intention);
+        }, this);
+
+        if (expand) {
+            value = (change ? change : value.change())
+                .select(selection)
+                .focus();
+        } else {
+            value = (change ? change : value.change())
+                .focus();
         }
 
         this.applyChanges(change);
@@ -413,6 +473,7 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     public toggleInlineIntention(change, node, intention: Intention): void {
         let data;
+
         if (change.value.marks.some(m => m.type == "custom")) {
             change.value.marks.forEach(mark => {
                 if (mark) {
@@ -433,31 +494,82 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public toggleBlockIntention(change, node, intention: Intention) {
-        let { data } = node;
-        let newData = this.toggleIntentionInternal(data, intention);
+        const data = node.data;
+        const newData = this.toggleIntentionInternal(data, intention);
 
         return this.updateCustomBlock(change, data, newData);
     }
 
-    public toggleIntentionInternal(data: Data, intention: Intention): Map<string, any> {
-        const storedIntention : any = this.toStoredIntention(intention);
-        
+    public setInlineIntention(change, node, intention: Intention): void {
+        let data;
+
+        if (change.value.marks.some(m => m.type == "custom")) {
+            change.value.marks.forEach(mark => {
+                if (mark) {
+                    data = mark.data
+                }
+
+                let newData = this.setIntentionInternal(data, intention);
+
+                change = this.updateCustomMark(change, data, newData, mark);
+            })
+        }
+        else {
+            const newData = this.setIntentionInternal(null, intention);
+
+            change = this.updateCustomMark(change, data, newData);
+        }
+
+        return change;
+    }
+
+    public setBlockIntention(change, node, intention: Intention) {
+        const data = node.data;
+        const newData = this.setIntentionInternal(data, intention);
+
+        return this.updateCustomBlock(change, data, newData);
+    }
+
+    public setIntentionInternal(data: Data, intention: Intention): Map<string, any> {
+        const storedIntention: any = this.toStoredIntention(intention);
+
         if (!data) {
             if (!intention) {
                 return null;
             }
 
-            return Data.create({intentions: storedIntention });
+            return Data.create({ intentions: storedIntention });
         }
 
         let storedIntentions = data.get("intentions");
 
-        if (!storedIntentions)
-        {
+        if (!storedIntentions) {
             return data.set("intentions", storedIntention);
         }
 
-        if (Utils.intersectDeep(storedIntentions, (t, s, k) => t[k] == s[k] ? t[k] : undefined, storedIntention)){
+        storedIntentions = Utils.mergeDeep(storedIntentions, storedIntention)
+
+        return data.set("intentions", storedIntentions);
+    }
+
+    public toggleIntentionInternal(data: Data, intention: Intention): Map<string, any> {
+        const storedIntention: any = this.toStoredIntention(intention);
+
+        if (!data) {
+            if (!intention) {
+                return null;
+            }
+
+            return Data.create({ intentions: storedIntention });
+        }
+
+        let storedIntentions = data.get("intentions");
+
+        if (!storedIntentions) {
+            return data.set("intentions", storedIntention);
+        }
+
+        if (Utils.intersectDeep(storedIntentions, (t, s, k) => t[k] == s[k] ? t[k] : undefined, storedIntention)) {
             storedIntentions = Utils.complementDeep(storedIntentions, true, storedIntention);
         } else {
             storedIntentions = Utils.mergeDeep(storedIntentions, storedIntention)
@@ -470,8 +582,8 @@ export class SlateReactComponent extends React.Component<any, any> {
             return data.delete("intentions");
         }
     }
-    
-    private toStoredIntention(intention: Intention): any{
+
+    private toStoredIntention(intention: Intention): any {
         const segments = intention.fullId.split(".");
         const lastSegment = segments[segments.length - 1];
         let result = {};
@@ -539,12 +651,12 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public enable(): void {
-        this.setState({readOnly: false});
+        this.setState({ readOnly: false });
         this.forceUpdate();
     }
 
     public disable(): void {
-        this.setState({readOnly: true});
+        this.setState({ readOnly: true });
         this.clearSelection();
     }
 
@@ -628,14 +740,14 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         change = change
             .wrapInline(
-            {
-                type: "link",
-                data: {
-                    href: hyperlink.href,
-                    target: hyperlink.target,
-                    permalinkKey: hyperlink.permalinkKey
-                }
-            });
+                {
+                    type: "link",
+                    data: {
+                        href: hyperlink.href,
+                        target: hyperlink.target,
+                        permalinkKey: hyperlink.permalinkKey
+                    }
+                });
 
         value = change.value;
 
@@ -746,7 +858,7 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @return {Boolean}
      */
     private findInlineNode(type): any {
-        const value : Value= this.getActualState();
+        const value: Value = this.getActualState();
         return value.inlines.find(node => node.type == type)
     }
 
@@ -756,16 +868,16 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {Change} change
      */
     public onChange(change: Change): void {
-        
+
         this.setState({ value: change.value });
 
-        if (change && 
-            change.operations && 
+        if (change &&
+            change.operations &&
             change.operations.length === 1 &&
-            change.operations[0]["properties"] && 
-            change.operations[0]["properties"].isFocused === false){
-                return;
-            }
+            change.operations[0]["properties"] &&
+            change.operations[0]["properties"].isFocused === false) {
+            return;
+        }
 
         this.notifyListeners(this.state.selectionChangeListeners);
     }
@@ -814,13 +926,13 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.applyChanges(change);
     }
 
-    private applyChanges(change){
+    private applyChanges(change) {
         this.onChange(change);
         this.forceUpdate();
     }
 
     private toggleBlock(type: string): void {
-        let value = this.getActualState();
+        const value = this.getActualState();
         let change = value.change();
 
         const { document } = value;
@@ -890,13 +1002,13 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         const hrefData = this.getMyself().state.getHrefData();
 
-        change = 
+        change =
             change
-            .wrapInline({
-                type: "link",
-                data: hrefData
-            })
-            .moveToOffsets(anchorOffset, focusOffset);
+                .wrapInline({
+                    type: "link",
+                    data: hrefData
+                })
+                .moveToOffsets(anchorOffset, focusOffset);
 
         this.applyChanges(change);
     }
@@ -936,9 +1048,9 @@ export class SlateReactComponent extends React.Component<any, any> {
      * @param {Object} props
      * @return {Element}
      */
-  
+
     renderNode = (props) => {
-        const {node} = props;
+        const { node } = props;
         switch (node.type) {
             case "block-quote": return this.createReactElement("blockquote", props)
             case "bulleted-list": return this.createReactElement("ul", props)
@@ -956,16 +1068,16 @@ export class SlateReactComponent extends React.Component<any, any> {
             case "custom": return this.createReactElement("div", props)
         }
     }
-  
+
     /**
      * Render a Slate mark.
      *
      * @param {Object} props
      * @return {Element}
      */
-  
+
     renderMark = (props) => {
-        const {mark} = props;
+        const { mark } = props;
         switch (mark.type) {
             case "bold": return this.createReactElement("b", props)
             case "italic": return this.createReactElement("i", props)
@@ -989,8 +1101,8 @@ export class SlateReactComponent extends React.Component<any, any> {
         const attributes = properties.attributes || {};
 
         // TODO: Make universal!!!
-        const intentionSubtree : any = this.findIntentions(storedIntentions);
-        const intentions : Intention[] = Utils.leaves(intentionSubtree);
+        const intentionSubtree: any = this.findIntentions(storedIntentions);
+        const intentions: Intention[] = Utils.leaves(intentionSubtree);
 
         if (intentions.length > 0) {
             const className = intentions.map(intention => intention.params()).join(" ");
@@ -1012,8 +1124,8 @@ export class SlateReactComponent extends React.Component<any, any> {
 
     private findIntentions(intentionIds: any): any {
 
-        const intentionSubtree = Utils.intersectDeep(this.intentions, 
-            (target: any, source: any, key: string) => 
+        const intentionSubtree = Utils.intersectDeep(this.intentions,
+            (target: any, source: any, key: string) =>
                 ({ [source[key]]: target[key][source[key]] }), intentionIds);
 
         return intentionSubtree;
