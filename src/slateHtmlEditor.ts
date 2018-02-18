@@ -6,7 +6,7 @@ import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing/IHtmlEditor";
-import { Intention } from "../../paperbits-common/src/appearence/intention";
+import { Intention } from "../../paperbits-common/src/appearance/intention";
 
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
@@ -40,24 +40,17 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.removeHyperlink = this.removeHyperlink.bind(this);
         this.disable = this.disable.bind(this);
         this.renderToContainer = this.renderToContainer.bind(this);
-
-        // this.slateParams : SlateReactComponentParameters = {
-        //     getSelectionStateCallback: null
-        // };
     }
 
     public renderToContainer(element: HTMLElement): void {
         try {
-
-            
             const props: SlateReactComponentParameters = {
                 parentElement: element,
                 instanceSupplier: (slate: SlateReactComponent) => { this.slateReactComponent = slate; },
                 intentions: this.intentions
             }
-            
-            const reactElement = React.createElement(SlateReactComponent, props);
 
+            const reactElement = React.createElement(SlateReactComponent, props);
 
             this.slateReactComponent = ReactDOM.render(reactElement, element)
         }
@@ -67,7 +60,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public getSelectionState(): SelectionState {
-        let state = this.slateReactComponent.getSelectionState();
+        const state = this.slateReactComponent.getSelectionState();
 
         state.normal = !state.h1 && !state.h2 && !state.h3 && !state.h4 && !state.h5 && !state.h6 && !state.code && !state.quote;
 
@@ -84,57 +77,57 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public toggleBold(): void {
-        this.slateReactComponent.toggleBold();
+        this.slateReactComponent.toggleMark("bold");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleItalic(): void {
-        this.slateReactComponent.toggleItalic();
+        this.slateReactComponent.toggleMark("italic");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleUnderlined(): void {
-        this.slateReactComponent.toggleUnderlined();
+        this.slateReactComponent.toggleMark("underlined");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleUl(): void {
-        this.slateReactComponent.toggleUl();
+        this.slateReactComponent.toggleBlock("bulleted-list");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleOl(): void {
-        this.slateReactComponent.toggleOl();
+        this.slateReactComponent.toggleBlock("numbered-list");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH1(): void {
-        this.slateReactComponent.toggleH1();
+        this.slateReactComponent.toggleBlock("heading-one");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH2(): void {
-        this.slateReactComponent.toggleH2();
+        this.slateReactComponent.toggleBlock("heading-two");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH3(): void {
-        this.slateReactComponent.toggleH3();
+        this.slateReactComponent.toggleBlock("heading-three");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH4(): void {
-        this.slateReactComponent.toggleH4();
+        this.slateReactComponent.toggleBlock("heading-four");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH5(): void {
-        this.slateReactComponent.toggleH5();
+        this.slateReactComponent.toggleBlock("heading-five");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH6(): void {
-        this.slateReactComponent.toggleH6();
+        this.slateReactComponent.toggleBlock("heading-six");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
@@ -151,17 +144,22 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public toggleQuote(): void {
-        this.slateReactComponent.toggleQuote();
+        this.slateReactComponent.toggleBlock("block-quote");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleCode(): void {
-        this.slateReactComponent.toggleCode();
+        this.slateReactComponent.toggleBlock("code");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
-    
+
     public toggleIntention(intention: Intention): void {
         this.slateReactComponent.toggleIntention(intention);
+        this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
+    }
+
+    public setIntention(intention: Intention): void {
+        this.slateReactComponent.setIntention(intention);
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
@@ -202,7 +200,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         return this.slateReactComponent.getSelectionText();
     }
 
-    public removeAllIntentions(): void{
-        return this.slateReactComponent.removeAllIntentions();
+    public removeAllIntentions(): void {
+        return this.slateReactComponent.clearIntentions();
     }
 }
