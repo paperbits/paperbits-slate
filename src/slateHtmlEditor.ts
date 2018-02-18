@@ -77,57 +77,57 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public toggleBold(): void {
-        this.slateReactComponent.toggleBold();
+        this.slateReactComponent.toggleMark("bold");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleItalic(): void {
-        this.slateReactComponent.toggleItalic();
+        this.slateReactComponent.toggleMark("italic");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleUnderlined(): void {
-        this.slateReactComponent.toggleUnderlined();
+        this.slateReactComponent.toggleMark("underlined");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleUl(): void {
-        this.slateReactComponent.toggleUl();
+        this.slateReactComponent.toggleBlock("bulleted-list");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleOl(): void {
-        this.slateReactComponent.toggleOl();
+        this.slateReactComponent.toggleBlock("numbered-list");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH1(): void {
-        this.slateReactComponent.toggleH1();
+        this.slateReactComponent.toggleBlock("heading-one");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH2(): void {
-        this.slateReactComponent.toggleH2();
+        this.slateReactComponent.toggleBlock("heading-two");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH3(): void {
-        this.slateReactComponent.toggleH3();
+        this.slateReactComponent.toggleBlock("heading-three");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH4(): void {
-        this.slateReactComponent.toggleH4();
+        this.slateReactComponent.toggleBlock("heading-four");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH5(): void {
-        this.slateReactComponent.toggleH5();
+        this.slateReactComponent.toggleBlock("heading-five");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleH6(): void {
-        this.slateReactComponent.toggleH6();
+        this.slateReactComponent.toggleBlock("heading-six");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
@@ -144,12 +144,12 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public toggleQuote(): void {
-        this.slateReactComponent.toggleQuote();
+        this.slateReactComponent.toggleBlock("block-quote");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
     public toggleCode(): void {
-        this.slateReactComponent.toggleCode();
+        this.slateReactComponent.toggleBlock("code");
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
@@ -201,6 +201,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public removeAllIntentions(): void {
-        return this.slateReactComponent.removeAllIntentions();
+        return this.slateReactComponent.clearIntentions();
     }
 }

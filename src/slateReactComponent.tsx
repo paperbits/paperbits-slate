@@ -44,7 +44,6 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         this.intentions = props.intentions;
         props.instanceSupplier(this);
-        this.getMyself = this.getMyself.bind(this);
         this.updateState = this.updateState.bind(this);
         this.getState = this.getState.bind(this);
         this.getSelectionPosition = this.getSelectionPosition.bind(this);
@@ -59,19 +58,6 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.addOpenLinkEditorListener = this.addOpenLinkEditorListener.bind(this);
         this.getSelectionState = this.getSelectionState.bind(this);
         this.getIntentions = this.getIntentions.bind(this);
-        this.toggleBold = this.toggleBold.bind(this);
-        this.toggleItalic = this.toggleItalic.bind(this);
-        this.toggleUnderlined = this.toggleUnderlined.bind(this);
-        this.toggleUl = this.toggleUl.bind(this);
-        this.toggleOl = this.toggleOl.bind(this);
-        this.toggleH1 = this.toggleH1.bind(this);
-        this.toggleH2 = this.toggleH2.bind(this);
-        this.toggleH3 = this.toggleH3.bind(this);
-        this.toggleH4 = this.toggleH4.bind(this);
-        this.toggleH5 = this.toggleH5.bind(this);
-        this.toggleH6 = this.toggleH6.bind(this);
-        this.toggleQuote = this.toggleQuote.bind(this);
-        this.toggleCode = this.toggleCode.bind(this);
         this.setInlineIntention = this.setInlineIntention.bind(this);
         this.toggleInlineIntention = this.toggleInlineIntention.bind(this);
         this.setBlockIntention = this.setBlockIntention.bind(this);
@@ -90,13 +76,11 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.getMarkData = this.getMarkData.bind(this);
         this.hasBlock = this.hasBlock.bind(this);
         this.has = this.has.bind(this);
-        this.isAligned = this.isAligned.bind(this);
         this.findInlineNode = this.findInlineNode.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
         this.toggleMark = this.toggleMark.bind(this);
         this.toggleBlock = this.toggleBlock.bind(this);
-        this.onClickLink = this.onClickLink.bind(this);
         this.render = this.render.bind(this);
         this.renderEditor = this.renderEditor.bind(this);
         this.createReactElementInternal = this.createReactElementInternal.bind(this);
@@ -108,10 +92,6 @@ export class SlateReactComponent extends React.Component<any, any> {
             enabledListeners: [],
             readOnly: true
         }
-    }
-
-    public getMyself(): SlateReactComponent {
-        return this;
     }
 
     public getState(): Object {
@@ -286,60 +266,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         return result;
     }
 
-    public toggleBold(): void {
-        this.toggleMark("bold");
-    }
-
-    public toggleItalic(): void {
-        this.toggleMark("italic");
-    }
-
-    public toggleUnderlined(): void {
-        this.toggleMark("underlined");
-    }
-
-    public toggleUl(): void {
-        this.toggleBlock("bulleted-list");
-    }
-
-    public toggleOl(): void {
-        this.toggleBlock("numbered-list");
-    }
-
-    public toggleH1(): void {
-        this.toggleBlock("heading-one");
-    }
-
-    public toggleH2(): void {
-        this.toggleBlock("heading-two");
-    }
-
-    public toggleH3(): void {
-        this.toggleBlock("heading-three");
-    }
-
-    public toggleH4(): void {
-        this.toggleBlock("heading-four");
-    }
-
-    public toggleH5(): void {
-        this.toggleBlock("heading-five");
-    }
-
-    public toggleH6(): void {
-        this.toggleBlock("heading-six");
-    }
-
-    public toggleQuote(): void {
-        this.toggleBlock("block-quote");
-    }
-
-    public toggleCode(): void {
-        this.toggleBlock("code");
-    }
-
-    public removeAllIntentions(): void {
-
+    public clearIntentions(): void {
     }
 
     public setIntention(intention: Intention): void {
@@ -405,7 +332,6 @@ export class SlateReactComponent extends React.Component<any, any> {
 
         this.applyChanges(change);
     }
-
 
     public toggleIntention(intention: Intention): void {
         let nodes;
@@ -622,26 +548,28 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public resetToNormal(): void {
-        this.hasBlock("heading-one") && this.toggleH1(),
-            this.hasBlock("heading-two") && this.toggleH2(),
-            this.hasBlock("heading-three") && this.toggleH3(),
-            this.hasBlock("heading-four") && this.toggleH4(),
-            this.hasBlock("heading-five") && this.toggleH5(),
-            this.hasBlock("heading-six") && this.toggleH6(),
-            this.hasBlock("block-quote") && this.toggleQuote(),
-            this.hasBlock("code") && this.toggleCode();
+        // TODO: Make it universal method to clear all blocks;
 
-        let value = this.getActualState();
+        this.hasBlock("heading-one") && this.toggleBlock("heading-one");
+        this.hasBlock("heading-two") && this.toggleBlock("heading-two");
+        this.hasBlock("heading-three") && this.toggleBlock("heading-three");
+        this.hasBlock("heading-four") && this.toggleBlock("heading-four");
+        this.hasBlock("heading-five") && this.toggleBlock("heading-five");
+        this.hasBlock("heading-six") && this.toggleBlock("heading-six");
+        this.hasBlock("block-quote") && this.toggleBlock("block-quote");
+        this.hasBlock("code") && this.toggleBlock("code");
 
-        let change = value.change();
+        const state = this.getActualState();
 
-        value.blocks.forEach(block => {
+        let change = state.change();
+
+        state.blocks.forEach(block => {
             if (block.type == "custom") {
                 change = change.unwrapBlock(block.type, block.data);
             }
         })
 
-        value.marks.forEach(mark => {
+        state.marks.forEach(mark => {
             if (mark.type == "custom") {
                 change = change.removeMark(mark);
             }
@@ -841,17 +769,6 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     /**
-     * Check if the any of the currently selected blocks has alignment of `type`.
-     *
-     * @param {String} type
-     * @return {Boolean}
-     */
-    private isAligned(type): boolean {
-        let value = this.getActualState();
-        return value.blocks.some(node => node.data.get("alignment") == type)
-    }
-
-    /**
      * Check if the any of the currently selected inlines are of `type`.
      *
      * @param {String} type
@@ -931,7 +848,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         this.forceUpdate();
     }
 
-    private toggleBlock(type: string): void {
+    public toggleBlock(type: string): void {
         const value = this.getActualState();
         let change = value.change();
 
@@ -978,37 +895,6 @@ export class SlateReactComponent extends React.Component<any, any> {
                     .wrapBlock(type)
             }
         }
-
-        this.applyChanges(change);
-    }
-
-    public onClickLink(): void {
-        let value: Value = this.getActualState().value;
-
-        if (!value.selection.isExpanded) {
-            return;
-        }
-
-        let { anchorOffset, focusOffset } = value.selection;
-
-        const hasLink = this.findInlineNode("link");
-
-        let change = value.change();
-        if (hasLink) {
-            change = value
-                .change()
-                .unwrapInline("link");
-        }
-
-        const hrefData = this.getMyself().state.getHrefData();
-
-        change =
-            change
-                .wrapInline({
-                    type: "link",
-                    data: hrefData
-                })
-                .moveToOffsets(anchorOffset, focusOffset);
 
         this.applyChanges(change);
     }
