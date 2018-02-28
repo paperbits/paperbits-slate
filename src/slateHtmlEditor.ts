@@ -14,7 +14,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
     private readonly permalinkService: IPermalinkService;
     private readonly intentions: any;
-    private readonly selectionChangeListeners: Array<(htmlEditor: IHtmlEditor) => void>;
+    private readonly selectionChangeListeners: Array<(htmlEditor: IHtmlEditor) => void> = new Array();
     private readonly listTypes = [];
 
     private slateReactComponent: SlateReactComponent;
@@ -43,6 +43,11 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.removeHyperlink = this.removeHyperlink.bind(this);
         this.disable = this.disable.bind(this);
         this.renderToContainer = this.renderToContainer.bind(this);
+        this.onSelectionChange = this.onSelectionChange.bind(this);
+        this.setBlockIntention = this.setBlockIntention.bind(this);
+        this.setInlineIntention = this.setInlineIntention.bind(this);
+        this.toggleBlockIntention = this.toggleBlockIntention.bind(this);
+        this.toggleInlineIntention = this.toggleInlineIntention.bind(this);
     }
 
     // Slate React Component Event Listeners
@@ -112,7 +117,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public setState(state: Object): void {
-        this.slateReactComponent.setState(state);
+        this.slateReactComponent.setComponentState(state);
     }
 
     public toggleBold(): void {
@@ -480,109 +485,54 @@ export class SlateHtmlEditor implements IHtmlEditor {
         let change = value.change();
 
         const { document } = value;
+        const listPlugin = this.slateReactComponent.plugins.list;
 
-        value.blocks.forEach(block => {
-            const listItem = block.getClosest(block.key, node => node.type == "list");
+        const list = listPlugin.utils.getCurrentList(value);
+        const storedIntention: any = this.toStoredIntention(intention);
 
-            const storedIntention: any = this.toStoredIntention(intention);
-            const listProperties = { type: "list", data: Data.create({ intentions: storedIntention })}
-
-            // if this is a list, then we can find the list item, so we just update the list properties
-            if (listItem) {
-                const list = block.getClosest(block.key, node => node.type == "list");
-                change = change
-                    .setBlockByKey(list.key, listProperties)
+        if (list){
+            if (Utils.complementDeep(list.data.get("intentions"), true, storedIntention)){
+                //update list data
+                const listProperties = { type: "list", data: { intentions: storedIntention }}
+                change = change.setNodeByKey(list.key, listProperties)
+            } else {
+                // unwrap
+                change = change.call(listPlugin.changes.unwrapList)
             }
-            else { //otherwise - create a list and wrap the current block like this: <list><list-item> ... current </list-item></list> 
-                change = change
-                    .wrapBlockByKey(block.key, "list-item")
-                    .wrapBlockByKey(block.key, listProperties)
-            }
-        });
+        } else {
+            //wrap
+            change = change.call(listPlugin.changes.wrapInList, "list", { intentions: storedIntention })
+        }
+
+        this.slateReactComponent.commit(change);
     }
 
     public incIndent(): void {
         const value = this.slateReactComponent.getCurrentState();
         let change = value.change();
 
-        const listItemsInSelection = new Array<Block>();
-        value.blocks.forEach(block => {
-            const listItem : Block = block.type == "list-item" ? block : block.getClosest(block.key, node => node.type == "list-item");
-             
-            if (!listItemsInSelection.find(li => li === listItem)) {
-                listItemsInSelection.push(listItem);
-            }
-        });
+        const { document } = value;
+        const listPlugin = this.slateReactComponent.plugins.list;
 
-        //if selection has the first item in the list
-        if (listItemsInSelection.some(li => li.getPreviousSibling())) {
-            return; //then no action; otherwise the look will be broken
-        }
+        const list = listPlugin.utils.getCurrentList(value);
+        
+        change = change.call(listPlugin.changes.increaseItemDepth)
 
-        const listSelector = (lists, val) => {
-            if (lists.length === 0) {
-                lists.push(val.getParent(val.key))
-            }
-            const list = val.getParent(val.key);
-            if (!lists.find(l => l != list)){
-                lists.push(list);
-            }
-        };
-        const listsInSelection = listItemsInSelection.reduce(listSelector);
-        //if selection contain multiple lists then no action
-        if (listsInSelection.length !== 1){
-            return; //no action as long as selection contains more than one list
-        }
-
-        const list = listsInSelection[0];
-
-        const newListProperties = { 
-            type: "list", 
-            data: Data.create({ intentions: list.data.get("intentions") })
-        };
-
-        change = change
-            .wrapBlock(newListProperties)
-            .wrapBlock("list-item")
+        this.slateReactComponent.commit(change);
     }
 
     public decIndent(): void {
         const value = this.slateReactComponent.getCurrentState();
         let change = value.change();
 
-        const listItemsInSelection = new Array<Block>();
-        value.blocks.forEach(block => {
-            const listItem : Block = block.type == "list-item" ? block : block.getClosest(block.key, node => node.type == "list-item");
-             
-            if (!listItemsInSelection.find(li => li === listItem)) {
-                listItemsInSelection.push(listItem);
-            }
-        });
+        const { document } = value;
+        const listPlugin = this.slateReactComponent.plugins.list;
 
-        //if selection has the first item in the list
-        if (listItemsInSelection.some(li => li.getPreviousSibling())) {
-            return; //then no action; otherwise the look will be broken
-        }
-
-        const listSelector = (lists, val) => {
-            if (lists.length === 0) {
-                lists.push(val.getParent(val.key))
-            }
-            const list = val.getParent(val.key);
-            if (!lists.find(l => l != list)){
-                lists.push(list);
-            }
-        };
+        const list = listPlugin.utils.getCurrentList(value);
         
-        const listsInSelection = listItemsInSelection.reduce(listSelector);
-        //if selection contain multiple lists then no action
-        if (listsInSelection.length !== 1){
-            return; //no action as long as selection contains more than one list
-        }
+        change = change.call(listPlugin.changes.decreaseItemDepth)
 
-        change = change
-            .unwrapBlock("list")
-            .unwrapBlock("list-item")
+        this.slateReactComponent.commit(change);
     }
 
     private toggleInlineIntention(change, node, intention: Intention): void {
@@ -661,6 +611,9 @@ export class SlateHtmlEditor implements IHtmlEditor {
             return data.set("intentions", storedIntention);
         }
 
+        if (Utils.getObjectAt(intention.groupId, storedIntentions, ".")){
+            storedIntentions = Utils.replace(intention.groupId, storedIntentions, {}, ".")   
+        }
         storedIntentions = Utils.mergeDeep(storedIntentions, storedIntention)
 
         return data.set("intentions", storedIntentions);
@@ -686,6 +639,9 @@ export class SlateHtmlEditor implements IHtmlEditor {
         if (Utils.intersectDeep(storedIntentions, (t, s, k) => t[k] == s[k] ? t[k] : undefined, storedIntention)) {
             storedIntentions = Utils.complementDeep(storedIntentions, true, storedIntention);
         } else {
+            if (Utils.getObjectAt(intention.groupId, storedIntentions, ".")){
+                storedIntentions = Utils.replace(intention.groupId, storedIntentions, {}, ".")   
+            }
             storedIntentions = Utils.mergeDeep(storedIntentions, storedIntention)
         }
 
@@ -738,7 +694,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         const value = this.slateReactComponent.getCurrentState();
         let change = value.change();
 
-        value.blocks.array.forEach(block => {
+        value.blocks.forEach(block => {
             const newType = block.type == type ? "paragraph" : type;
             if (block.type == "list-item"){
                 change = change
@@ -813,7 +769,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
         const intentionSubtree = Utils.intersectDeep(this.intentions,
             (target: any, source: any, key: string) =>
-                ({ [source[key]]: target[key][source[key]] }), intentionIds);
+                ({ [key]: target.get(key) }), intentionIds);
 
         return intentionSubtree;
     }

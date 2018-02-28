@@ -25,6 +25,7 @@
         "react-frame-aware-selection-plugin": "^2.0.2",
         "react-frame-component": "^2.0.1",
         "slate": "^0.32.0",
+        "slate-edit-list": "^0.11.2",
         "slate-react": "^0.11.0"
     },
     "devDependencies": {
