@@ -12,6 +12,7 @@ import * as Utils from "@paperbits/common/utils";
 import { IBag } from "@paperbits/common/IBag";
 import { isKeyHotkey } from 'is-hotkey'
 import { intersectDeep } from "@paperbits/common/utils";
+import * as editListPlugin from "slate-edit-list";
 
 injector();
 
@@ -37,6 +38,18 @@ export class SlateReactComponent extends React.Component<any, any> {
     private selectionChangeListener: () => void;
 
     state: SlateReactComponentState;
+
+    private list = editListPlugin.default({
+        types: ["list"],
+        typeItem: "list-item",
+        typeDefault: "paragraph"
+    });
+    
+    public plugins = {
+        list: this.list
+    };
+
+    private slatePlugins = [this.list];
 
     constructor(props: SlateReactComponentParameters) {
         super(props);
@@ -67,7 +80,7 @@ export class SlateReactComponent extends React.Component<any, any> {
         return st.document;
     }
 
-    public setState(newState: any): void {
+    public setComponentState(newState: any): void {
         var st = { document: { nodes: newState.nodes } };
 
         const value = Value.fromJSON(st, { terse: true });
@@ -157,6 +170,7 @@ export class SlateReactComponent extends React.Component<any, any> {
             spellCheck={false}
             renderNode={this.renderNode}
             renderMark={this.renderMark}
+            plugins={this.slatePlugins}
         />;
 
         return editor
@@ -252,12 +266,12 @@ export class SlateReactComponent extends React.Component<any, any> {
                 let start = null;
                 
                 // if start number set explicitl - use this value
-                if (intention.properties.start){
+                if (intention.properties && intention.properties.start){
                     start = intention.properties.start;
                 }
 
                 // if start set implicitly - calculate the start number based on previous siblings
-                if (intention.properties.continue){
+                if (intention.properties && intention.properties.continue){
                     start = 1;
                     let sibling = properties.node.getPreviousSibling();
                     while(sibling != null){
