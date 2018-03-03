@@ -1,6 +1,6 @@
 {
     "name": "@paperbits/slate",
-    "version": "0.0.57",
+    "version": "0.0.58",
     "description": "Paperbits HTML editor based on Slate.",
     "author": "Vienna LLC",
     "license": "GPL-3.0",
@@ -16,7 +16,7 @@
         "url": "https://github.com/paperbits/paperbits-slate/issues"
     },
     "dependencies": {
-        "@paperbits/common": "0.0.57",
+        "@paperbits/common": "0.0.58",
         "es6-shim": "^0.35.3",
         "immutable": "^3.8.1",
         "is-hotkey": "^0.1.1",
