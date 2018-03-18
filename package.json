@@ -33,7 +33,6 @@
         "@types/immutable": "^3.8.7",
         "@types/react": "^15.0.38",
         "gulp": "^3.9.1",
-        "gulp-sourcemaps": "^2.6.0",
         "gulp-typescript": "^3.2.1",
         "merge2": "^1.1.0",
         "typescript": "^2.4.1"
