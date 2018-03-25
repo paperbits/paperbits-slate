@@ -477,7 +477,21 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
     public getSelectionText(): string {
         const value = this.slateReactComponent.getCurrentState();
-        return value.texts._tail.array.map(x => x.text).join("");
+        const startPos = value.selection.isBackward ? value.selection.focusOffset : value.selection.anchorOffset;
+        const endPos = value.selection.isBackward ? value.selection.anchorOffset : value.selection.focusOffset; 
+        return value.texts._tail.array.map((x, i, a) => {
+            const text: string = x.text;
+            if (i === 0 && a.length === 1) {
+                return text.substring(startPos, endPos);
+            }
+            if (i === 0) {
+                return text.substring(startPos)
+            }
+            if (i === a.length) {
+                text.substring(0, endPos);
+            }
+            return text;
+        }).join("");
     }
 
     public setList(intention: Intention) {
