@@ -3,7 +3,7 @@
     "version": "0.0.70",
     "description": "Paperbits HTML editor based on Slate.",
     "author": "Vienna LLC",
-    "license": "GPL-3.0",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/paperbits/paperbits-slate.git"
