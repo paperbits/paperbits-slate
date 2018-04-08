@@ -42,7 +42,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.setHyperlink = this.setHyperlink.bind(this);
         this.removeHyperlink = this.removeHyperlink.bind(this);
         this.disable = this.disable.bind(this);
-        this.renderToContainer = this.renderToContainer.bind(this);
+        this.attachToElement = this.attachToElement.bind(this);
         this.onSelectionChange = this.onSelectionChange.bind(this);
         this.setBlockIntention = this.setBlockIntention.bind(this);
         this.setInlineIntention = this.setInlineIntention.bind(this);
@@ -57,7 +57,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
     // public interface inmplementation
 
-    public renderToContainer(element: HTMLElement): void {
+    public attachToElement(element: HTMLElement): void {
         try {
             const props: SlateReactComponentParameters = {
                 parentElement: element,
@@ -521,7 +521,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.slateReactComponent.commit(change);
     }
 
-    public incIndent(): void {
+    public increaseIndent(): void {
         const value = this.slateReactComponent.getCurrentState();
         let change = value.change();
 
@@ -535,7 +535,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.slateReactComponent.commit(change);
     }
 
-    public decIndent(): void {
+    public decreaseIndent(): void {
         const value = this.slateReactComponent.getCurrentState();
         let change = value.change();
 
