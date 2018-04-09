@@ -6,7 +6,7 @@ import { Editor } from "slate-react";
 import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
-import { SelectionState } from "@paperbits/common/editing/IHtmlEditor";
+import { SelectionState } from "@paperbits/common/editing";
 import { Intention } from "@paperbits/common/appearance/Intention";
 import * as Utils from "@paperbits/common/utils";
 import { IBag } from "@paperbits/common/IBag";

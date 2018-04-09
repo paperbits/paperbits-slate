@@ -5,7 +5,7 @@ import { SlateReactComponent, SlateReactComponentParameters } from "./slateReact
 import { IEventManager } from "@paperbits/common/events/IEventManager";
 import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
 import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
-import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing/IHtmlEditor";
+import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing";
 import { Intention } from "@paperbits/common/appearance/intention";
 import { Mark, Raw, Data, Value, Change, Block } from "slate";
 import * as Utils from "@paperbits/common/utils";
@@ -317,7 +317,6 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
-
     public setIntention(intention: Intention): void {
         let nodes;
         let changeFn: (change: Change, node: Node, intention: Intention) => void;
@@ -494,7 +493,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         }).join("");
     }
 
-    public setList(intention: Intention) {
+    public setList(intention: Intention): void {
         const value = this.slateReactComponent.getCurrentState();
         let change = value.change();
 
