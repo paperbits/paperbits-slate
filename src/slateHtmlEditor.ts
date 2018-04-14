@@ -2,13 +2,12 @@ import "es6-shim";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { SlateReactComponent, SlateReactComponentParameters } from "./slateReactComponent";
-import { IEventManager } from "@paperbits/common/events/IEventManager";
-import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
-import { IPermalinkService } from "@paperbits/common/permalinks/IPermalinkService";
+import { IEventManager } from "@paperbits/common/events";
+import { IHyperlink, IPermalinkService } from "@paperbits/common/permalinks";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing";
 import { Intention } from "@paperbits/common/appearance/intention";
 import { Mark, Raw, Data, Value, Change, Block } from "slate";
-import * as Utils from "@paperbits/common/utils";
+import * as Utils from "@paperbits/common";
 
 export class SlateHtmlEditor implements IHtmlEditor {
     private readonly eventManager: IEventManager;
@@ -51,7 +50,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     // Slate React Component Event Listeners
-    private onSelectionChange(): void{
+    private onSelectionChange(): void {
         this.selectionChangeListeners.forEach(listener => listener(this));
     }
 
@@ -76,7 +75,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
     }
 
     public getSelectionState(): SelectionState {
-        
+
         const state = {
             bold: this.hasMark("bold"),
             italic: this.hasMark("italic"),
@@ -477,7 +476,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
     public getSelectionText(): string {
         const value = this.slateReactComponent.getCurrentState();
         const startPos = value.selection.isBackward ? value.selection.focusOffset : value.selection.anchorOffset;
-        const endPos = value.selection.isBackward ? value.selection.anchorOffset : value.selection.focusOffset; 
+        const endPos = value.selection.isBackward ? value.selection.anchorOffset : value.selection.focusOffset;
         return value.texts._tail.array.map((x, i, a) => {
             const text: string = x.text;
             if (i === 0 && a.length === 1) {
@@ -503,10 +502,10 @@ export class SlateHtmlEditor implements IHtmlEditor {
         const list = listPlugin.utils.getCurrentList(value);
         const storedIntention: any = this.toStoredIntention(intention);
 
-        if (list){
-            if (Utils.complementDeep(list.data.get("intentions"), true, storedIntention)){
+        if (list) {
+            if (Utils.complementDeep(list.data.get("intentions"), true, storedIntention)) {
                 //update list data
-                const listProperties = { type: "list", data: { intentions: storedIntention }}
+                const listProperties = { type: "list", data: { intentions: storedIntention } }
                 change = change.setNodeByKey(list.key, listProperties)
             } else {
                 // unwrap
@@ -528,7 +527,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         const listPlugin = this.slateReactComponent.plugins.list;
 
         const list = listPlugin.utils.getCurrentList(value);
-        
+
         change = change.call(listPlugin.changes.increaseItemDepth)
 
         this.slateReactComponent.commit(change);
@@ -542,7 +541,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         const listPlugin = this.slateReactComponent.plugins.list;
 
         const list = listPlugin.utils.getCurrentList(value);
-        
+
         change = change.call(listPlugin.changes.decreaseItemDepth)
 
         this.slateReactComponent.commit(change);
@@ -624,8 +623,8 @@ export class SlateHtmlEditor implements IHtmlEditor {
             return data.set("intentions", storedIntention);
         }
 
-        if (Utils.getObjectAt(intention.groupId, storedIntentions, ".")){
-            storedIntentions = Utils.replace(intention.groupId, storedIntentions, {}, ".")   
+        if (Utils.getObjectAt(intention.groupId, storedIntentions, ".")) {
+            storedIntentions = Utils.replace(intention.groupId, storedIntentions, {}, ".")
         }
         storedIntentions = Utils.mergeDeep(storedIntentions, storedIntention)
 
@@ -652,8 +651,8 @@ export class SlateHtmlEditor implements IHtmlEditor {
         if (Utils.intersectDeep(storedIntentions, (t, s, k) => t[k] == s[k] ? t[k] : undefined, storedIntention)) {
             storedIntentions = Utils.complementDeep(storedIntentions, true, storedIntention);
         } else {
-            if (Utils.getObjectAt(intention.groupId, storedIntentions, ".")){
-                storedIntentions = Utils.replace(intention.groupId, storedIntentions, {}, ".")   
+            if (Utils.getObjectAt(intention.groupId, storedIntentions, ".")) {
+                storedIntentions = Utils.replace(intention.groupId, storedIntentions, {}, ".")
             }
             storedIntentions = Utils.mergeDeep(storedIntentions, storedIntention)
         }
@@ -702,14 +701,14 @@ export class SlateHtmlEditor implements IHtmlEditor {
 
         return change;
     }
-    
+
     private toggleBlock(type: string): void {
         const value = this.slateReactComponent.getCurrentState();
         let change = value.change();
 
         value.blocks.forEach(block => {
             const newType = block.type == type ? "paragraph" : type;
-            if (block.type == "list-item"){
+            if (block.type == "list-item") {
                 change = change
                     .setBlock(newType)
                     .wrapBlock("list-item")
@@ -749,7 +748,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         let value = this.slateReactComponent.getCurrentState();
         return value.marks.some(mark => mark.type == type)
     }
-    
+
     private findInlineNode(type): any {
         const value: Value = this.slateReactComponent.getCurrentState();
         return value.inlines.find(node => node.type == type)

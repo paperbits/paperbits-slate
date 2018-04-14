@@ -5,12 +5,12 @@ import { Mark, Raw, Data, Value, Change } from "slate";
 import { Editor } from "slate-react";
 import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
-import { IHyperlink } from "@paperbits/common/permalinks/IHyperlink";
+import { IHyperlink } from "@paperbits/common/permalinks";
 import { SelectionState } from "@paperbits/common/editing";
 import { Intention } from "@paperbits/common/appearance/Intention";
-import * as Utils from "@paperbits/common/utils";
-import { IBag } from "@paperbits/common/IBag";
-import { isKeyHotkey } from 'is-hotkey'
+import * as Utils from "@paperbits/common";
+import { IBag } from "@paperbits/common";
+import { isKeyHotkey } from "is-hotkey";
 import { intersectDeep } from "@paperbits/common/utils";
 import * as editListPlugin from "slate-edit-list";
 
