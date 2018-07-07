@@ -3,7 +3,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { SlateReactComponent, SlateReactComponentParameters } from "./slateReactComponent";
 import { IEventManager } from "@paperbits/common/events";
-import { IHyperlink, IPermalinkService } from "@paperbits/common/permalinks";
+import { HyperlinkContract, IPermalinkService } from "@paperbits/common/permalinks";
 import { IHtmlEditor, SelectionState, HtmlEditorEvents } from "@paperbits/common/editing";
 import { Intention } from "@paperbits/common/appearance/intention";
 import { Mark, Raw, Data, Value, Change, Block } from "slate";
@@ -164,7 +164,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.eventManager.dispatchEvent(HtmlEditorEvents.onSelectionChange);
     }
 
-    public setHyperlink(data: IHyperlink): void {
+    public setHyperlink(data: HyperlinkContract): void {
         let value = this.slateReactComponent.getCurrentState();
 
         const hasLink = this.findInlineNode("link");
@@ -208,7 +208,7 @@ export class SlateHtmlEditor implements IHtmlEditor {
         this.slateReactComponent.commit(change);
     }
 
-    public getHyperlink(): IHyperlink {
+    public getHyperlink(): HyperlinkContract {
         let value = this.slateReactComponent.getCurrentState();
         const hasInline = this.findInlineNode("link");
 

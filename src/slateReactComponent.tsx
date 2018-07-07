@@ -5,7 +5,7 @@ import { Mark, Raw, Data, Value, Change } from "slate";
 import { Editor } from "slate-react";
 import { Set, Seq, Collection, List, Map } from "immutable";
 import { initialState } from "./state";
-import { IHyperlink } from "@paperbits/common/permalinks";
+import { HyperlinkContract } from "@paperbits/common/editing";
 import { SelectionState } from "@paperbits/common/editing";
 import { Intention } from "@paperbits/common/appearance/Intention";
 import * as Utils from "@paperbits/common";
