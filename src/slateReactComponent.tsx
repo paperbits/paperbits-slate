@@ -81,7 +81,7 @@ export class SlateReactComponent extends React.Component<any, any> {
     }
 
     public setComponentState(newState: any): void {
-        var st = { document: { nodes: newState.nodes } };
+        let st = { document: { nodes: newState.nodes } };
 
         const value = Value.fromJSON(st, { terse: true });
         this.setState({ value: value });

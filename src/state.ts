@@ -1,4 +1,4 @@
-export var initialState = {
+export let initialState = {
     "document": {
         "nodes": [
             {
