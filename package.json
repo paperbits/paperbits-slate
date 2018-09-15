@@ -2,7 +2,7 @@
     "name": "@paperbits/slate",
     "version": "0.1.14",
     "description": "Paperbits HTML editor based on Slate.",
-    "author": "Vienna LLC",
+    "author": "Paperbits",
     "license": "MIT",
     "repository": {
         "type": "git",
